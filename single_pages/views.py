@@ -1,14 +1,14 @@
 from django.shortcuts import render
 
-def book_detail(request):
+def about_me(request):
     return render(
         request,
-        'single_pages/book_detail.html',
+        'single_pages/about_me.html',
     )
 
 
-def landing(request):
+def index(request):
     return render(
         request,
-        'single_pages/landing.html',
+        'single_pages/index.html',
     )
