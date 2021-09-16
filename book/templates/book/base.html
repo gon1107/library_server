@@ -2,7 +2,7 @@
 {% load static %}
 <html>
 <head>
-    <title>도서목록</title>
+    <title>{% block head_title %}도서목록{% endblock %}</title>
     <link href="{% static 'blog/bootstrap/bootstrap.css' %}" rel="stylesheet" type="text/css">
     <script src="https://kit.fontawesome.com/3c23c74fb5.js" crossorigin="anonymous"></script>
 
@@ -19,91 +19,8 @@
     </style>
 </head>
 <body>
-<!-- 네비게이션바 영역 (992px보다 크면 메뉴 확장버튼 숨겨짐, 배경은 검은색)-->
-<nav class="navbar navbar-expand-lg navbar-dark bg-dark">
-    <div class="container">
-        <!-- 브랜드 명을 입력하는 부분-->
-        <a class="navbar-brand" href="#" , navbar>도서목록</a>
-        <!-- navbar-expand-lg 클래스를 nav 태그에서 사용한 경우는 992px보다 작을 경우 아래 버튼 표시-->
-        <!-- 아래 버튼은 폰 화면 크기에서 메뉴를 보였다 숨겼다 하는 버튼-->
-        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent">
-            <!-- 확장 버튼 아이콘 모양을 결정-->
-            <span class="navbar-toggler-icon"></span>
-        </button>
 
-        <!-- 위 button을 눌렀을 때 나타났다 사라지는 메뉴 부분-->
-        <!-- 메뉴 구성하는 부분-->
-        <div class="collapse navbar-collapse" id="navbarSupportedContent">
-            <!-- 네비게이션의 좌측부분 (mr-auto 적용하여 좌측정렬)-->
-            <ul class="navbar-nav mr-auto">
-                <!-- 첫 번째 메뉴-->
-                <li class="nav-item">
-                    <a class="nav-link" href="./index.html">Home</a>
-                </li>
-                <!-- 두 번째 메뉴-->
-                <li class="nav-item">
-                    <a class="nav-link" href="info.html">도서관안내</a>
-                </li>
-
-                <!-- 세 번째 메뉴 (드롭다운 메뉴)-->
-                <li class="nav-item dropdown active">
-                    <!-- 드롭다운 메뉴를 펼쳤다 숨겼다 하는 버튼-->
-                    <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown"
-                       role="button" data-toggle="dropdown">
-                        자료검색
-                    </a>
-                    <!-- 드롭다운 메뉴 구성-->
-                    <div class="dropdown-menu">
-                        <a class="dropdown-item" href="./search.html">소장자료</a>
-                        <a class="dropdown-item" href="book_list.html">도서목록</a>
-                    </div>
-                </li>
-            </ul>
-        </div>
-        <!-- 로그인 버튼-->
-        <ul class="navbar-nav ml-auto">
-            <li class="nav-item">
-                <a class="nav-link" href="#" data-toggle="modal" data-target="#loginModal">Log In</a>
-            </li>
-        </ul>
-    </div>
-</nav>
-
-<!-- Modal -->
-<div class="modal fade" id="loginModal" tabindex="-1" role="dialog">
-    <div class="modal-dialog" role="document">
-        <div class="modal-content">
-            <div class="modal-header">
-                <!-- 모달 헤더 (모달의 제목과 닫기버튼 존재) -->
-                <h5 class="modal-title">Log In</h5>
-                <button type="button" class="close" data-dismiss="modal">
-                    <span>&times;</span>
-                </button>
-            </div>
-            <div dlass="modal-body">
-                <div class="row">
-                    <div class="col-md-6">
-                        <button type="button" class="btn btn-outline-dark btn-block"><i
-                                class="fab fa-google google-icon"></i>Log in with Google
-                        </button>
-                        <button type="button" class="btn btn-outline-dark btn-block"><i class="fas fa-envelope"></i>Log
-                            in with E-mail
-                        </button>
-                    </div>
-                    <div class="col-md-6">
-                        <button type="button" class="btn btn-outline-dark btn-block"><i class="fas fa-envelope"></i>Sign
-                            up with E-mail
-                        </button>
-                    </div>
-                </div>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-                <button type="button" class="btn btn-primary">Save changes</button>
-            </div>
-        </div>
-    </div>
-</div>
+{% include 'book/navbar.html' %}
 
 <div class="container">
     <div class="row">
@@ -144,9 +61,8 @@
     </div>
 </div>
 
-<footer class="py-5 bg-dark">
-    <div class="container"><p class="m-0 text-center text-white">Copyright &copy; Your Website 2021</p></div>
-</footer>
+{% include 'book/footer.html' %}
+
 <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"
         integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj"
         crossorigin="anonymous"></script>

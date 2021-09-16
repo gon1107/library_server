@@ -1,60 +1,66 @@
 {% extends 'book/base.html' %}
 
+{% block head_title %}
+{{book.title}} - 도서목록
+{% endblock %}
+
 {% block main_area %}
 <!-- Page content-->
 <div class="container mt-5">
     <div class="row">
         <div class="col-lg-9">
-            <!-- Book content-->
-            <article>
-                <div class="container mt-5">
-                    <div class="row">
-                        <div class="col-md-3 col-lg-3">
-                            <!-- Preview image figure-->
-                            <figure class="mb-4">
-                                {% if book.head_image %}
-                                <img class="img-fluid rounded" src="{{book.head_image.url}}" alt="{{book}} head image" />
-                                {% else %}
-                                <img class="img-fluid rounded" src="https://picsum.photos/seed/{{book.id}}/800/800" alt="random_image">
-                                {% endif %}
-                            </figure>
-                        </div>
-                        <div class="col-md-9 col-lg-9">
-                            <!-- Book header-->
-                            <header class="mb-4">
-                                <!-- Post title-->
-                                <h1 class="fw-bolder mb-1">{{book.title}}</h1>
-                                <!-- 요약문 출력 부분 -->
-                                <h5 class="text-muted">{{book.hook_text}}</h5>
-                                <!-- Post meta content-->
-                                <div class="text-muted fst-italic mb-2">{{book.created_at}} by <a href="#">작성자명 쓸 위치(개발예정)</a></div>
-                                <div class="text-muted fst-italic mb-2">출판정보 : {{book.publisher}}, {{book.release_date}}</div>
-                                <div class="text-muted fst-italic mb-2">가격 : {{book.price}}</div>
-                                <!-- Post categories-->
-                                <a class="badge bg-secondary text-decoration-none link-light" href="#!">Web Design</a>
-                                <a class="badge bg-secondary text-decoration-none link-light" href="#!">Freebies</a>
-                            </header>
-                        </div>
-                        <!-- Book content-->
-                        <section class="mb-5">{{book.content}}</section>
-                        {% if book.file_upload %}
-                        <a href="{{book.file_upload.url}}" class="btn btn-outline-dark" role="button" download>Download:
+            <div id = "book-area">
+                <!-- Book content-->
+                <article>
+                    <div class="container mt-5">
+                        <div class="row">
+                            <div class="col-md-3 col-lg-3">
+                                <!-- Preview image figure-->
+                                <figure class="mb-4">
+                                    {% if book.head_image %}
+                                    <img class="img-fluid rounded" src="{{book.head_image.url}}" alt="{{book}} head image" />
+                                    {% else %}
+                                    <img class="img-fluid rounded" src="https://picsum.photos/seed/{{book.id}}/800/800" alt="random_image">
+                                    {% endif %}
+                                </figure>
+                            </div>
+                            <div class="col-md-9 col-lg-9">
+                                <!-- Book header-->
+                                <header class="mb-4">
+                                    <!-- Post title-->
+                                    <h1 class="fw-bolder mb-1">{{book.title}}</h1>
+                                    <!-- 요약문 출력 부분 -->
+                                    <h5 class="text-muted">{{book.hook_text}}</h5>
+                                    <!-- Post meta content-->
+                                    <div class="text-muted fst-italic mb-2">{{book.created_at}} by <a href="#">작성자명 쓸 위치(개발예정)</a></div>
+                                    <div class="text-muted fst-italic mb-2">출판정보 : {{book.publisher}}, {{book.release_date}}</div>
+                                    <div class="text-muted fst-italic mb-2">가격 : {{book.price}}</div>
+                                    <!-- Post categories-->
+                                    <a class="badge bg-secondary text-decoration-none link-light" href="#!">Web Design</a>
+                                    <a class="badge bg-secondary text-decoration-none link-light" href="#!">Freebies</a>
+                                </header>
+                            </div>
+                            <!-- Book content-->
+                            <section class="mb-5">{{book.content}}</section>
+                            {% if book.file_upload %}
+                            <a href="{{book.file_upload.url}}" class="btn btn-outline-dark" role="button" download>Download:
 
-                            {% if book.get_file_ext == 'csv' %}
-                            <i class="fas fa-file-csv"></i>
-                            {% elif book.get_file_ext == 'xlsx' or book.get_file_ext == 'xls' %}
-                            <i class="fas fa-file-excel"></i>
-                            {% elif book.get_file_ext == 'docx' or book.get_file_ext == 'doc' %}
-                            <i class ="fas fa-file-word"></i>
-                            {% else %}
-                            <i class ="fas fa-file"></i>
+                                {% if book.get_file_ext == 'csv' %}
+                                <i class="fas fa-file-csv"></i>
+                                {% elif book.get_file_ext == 'xlsx' or book.get_file_ext == 'xls' %}
+                                <i class="fas fa-file-excel"></i>
+                                {% elif book.get_file_ext == 'docx' or book.get_file_ext == 'doc' %}
+                                <i class ="fas fa-file-word"></i>
+                                {% else %}
+                                <i class ="fas fa-file"></i>
+                                {% endif %}
+                                {{book.get_file_name}}
+                            </a>
                             {% endif %}
-                            {{book.get_file_name}}
-                        </a>
-                        {% endif %}
+                        </div>
                     </div>
-                </div>
-            </article>
+                </article>
+            </div>
         </div>
     </div>
 </div>
