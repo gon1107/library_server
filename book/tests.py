@@ -1,4 +1,5 @@
 from bs4 import BeautifulSoup
+from django.contrib.auth.models import User
 from django.test import TestCase, Client
 
 from book.models import Book
@@ -6,6 +7,8 @@ from book.models import Book
 class TestView(TestCase):
     def setUp(self):
         self.client = Client()
+        self.user_trump = User.objects.create_user(username='trump', password='somepassword')
+        self.user_obama = User.objects.create_user(username='obama', password='somepassword')
 
     def navbar_test(self, soup):
         navbar = soup.nav
@@ -48,12 +51,13 @@ class TestView(TestCase):
 
         # 3.1 게시물이 2개를 등록하고 2개가 등록되었는지 체크
         book_001 = Book.objects.create(
-             title='첫 번째 책입니다.',
-             content='Hello World. We are the world.',
-             book_author='Hong Gil Dong',
-             publisher = 'Chosun',
-             price = 10000,
-             release_date = '2021-09-15'
+            title='첫 번째 책입니다.',
+            content='Hello World. We are the world.',
+            book_author='Hong Gil Dong',
+            publisher = 'Chosun',
+            price = 10000,
+            release_date = '2021-09-15',
+            author = self.user_trump,
          )
 
         book_002 = Book.objects.create(
@@ -62,7 +66,8 @@ class TestView(TestCase):
             book_author='Hong Gil Dong',
             publisher='Chosun',
             price=20000,
-            release_date='2021-09-15'
+            release_date='2021-09-15',
+            author=self.user_obama,
         )
         self.assertEqual(Book.objects.count(), 2)
 
@@ -85,7 +90,8 @@ class TestView(TestCase):
             book_author='Hong Gil Dong',
             publisher='Chosun',
             price=10000,
-            release_date='2021-09-15'
+            release_date='2021-09-15',
+            author=self.user_trump,
         )
         # 1.2. 그 포스트의 url은 'blog/1'이다
         self.assertEqual(book_001.get_absolute_url(), '/book/1/')
