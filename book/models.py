@@ -23,8 +23,8 @@ class Book(models.Model):
     updated_at = models.DateField(auto_now=True)
     content = models.TextField()
 
-    head_image = models.ImageField(upload_to='blog/images/%Y/%m/%d/', blank=True)
-    file_upload =models.FileField(upload_to='blog/files/%Y/%m/%d/', blank=True)
+    head_image = models.ImageField(upload_to='book/images/%Y/%m/%d/', blank=True)
+    file_upload =models.FileField(upload_to='book/files/%Y/%m/%d/', blank=True)
 
     author = models.ForeignKey(User, null=True, on_delete=models.SET_NULL)
 

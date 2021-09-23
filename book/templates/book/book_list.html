@@ -4,9 +4,9 @@
 <!-- Book post-->
 <div class="container">
     <div class="card">
-        <div class ="row">
-            {% if book_list.exists %}
-            {% for b in book_list %}
+        {% if book_list.exists %}
+        {% for b in book_list %}
+        <div class ="row" id="book-{{b.pk}}">
             <div class="col-md-3 col-lg-3">
                 <!-- 블로그 포스트 카드의 그림영역 -->
                 <a href="#!">
@@ -20,6 +20,11 @@
             <div class="col-md-9 col-lg-9">
                 <!-- 블로그 글의 요약 부분-->
                 <div class="card-body">
+                    {% if b.category %}
+                    <span class="badge badge-secondary float-right">{{b.category}}</span>
+                    {% else %}
+                    <span class="badge badge-secondary float-right">미분류</span>
+                    {% endif %}
                     <div class="small text-muted">{{b.created_at}}
                         <a href="#">{{b.author}}</a></div>
                     <h2 class="card-title h4">{{b.title}}</h2>
@@ -33,11 +38,11 @@
                     <a class="btn btn-primary" href="{{b.get_absolute_url}}">Read more</a>
                 </div>
             </div>
-            {% endfor %}
-            {% else %}
-            <h3>아직 게시물이 없습니다.</h3>
-            {% endif %}
         </div>
+        {% endfor %}
+        {% else %}
+        <h3>아직 게시물이 없습니다.</h3>
+        {% endif %}
     </div>
 </div>
 <!-- Pagination-->
