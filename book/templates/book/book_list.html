@@ -25,8 +25,7 @@
                     {% else %}
                     <span class="badge badge-secondary float-right">미분류</span>
                     {% endif %}
-                    <div class="small text-muted">{{b.created_at}}
-                        <a href="#">{{b.author}}</a></div>
+                    <div class="small text-muted">{{b.created_at}}</a></div>
                     <h2 class="card-title h4">{{b.title}}</h2>
                     {% if b.hook_text %}
                     <h5 class="card-text">요약문 : {{b.hook_text}}</h5>

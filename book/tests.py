@@ -137,7 +137,5 @@ class TestView(TestCase):
         self.assertIn(self.book_001.title, book_area.text)
         self.assertIn(self.category_programming.name, book_area.text)
 
-        # 2.5. 첫 번째 포스트의 작성자(author)가 포스트 영역에 있다(아직 구현할 수 없음).
-        self.assertIn(self.user_trump.username.upper(), book_area.text)
         # 2.6. 첫 번째 포스트의 내용(content)이 포스트 영역에 있다.
         self.assertIn(self.book_001.content, book_area.text)
