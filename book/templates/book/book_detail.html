@@ -45,6 +45,20 @@
                             </div>
                             <!-- Book content-->
                             <section class="mb-5">{{book.content}}</section>
+
+                            {% if book.tags.exists %}
+                            <i class="fas fa-tags"></i><!-- fontawesome을 활용해 tag 아이콘 사용 -->
+
+                            <!-- all 대신 iterator 사용 이유 -->
+                            <!-- 결과를 재사용하지 않고, 메모리 문제를 일으킬 만한 많은 양의 데이터를 사용할 경우는 all() 대신 iterator()를 사용해야 한다. -->
+                            {% for tag in book.tags.all %}
+                            <!-- 태그 하이퍼링크 생성. 클릭하면 태그 페이지로 이동한다 -->
+                            <a href="{{tag.get_absolute_url}}"><span class="'badge badge-pill badge-light">{{tag}}</span></a>
+                            {% endfor %}
+                            <br/><!-- 줄바꿈-->
+                            <br/>
+                            {% endif %}
+
                             {% if book.file_upload %}
                             <a href="{{book.file_upload.url}}" class="btn btn-outline-dark" role="button" download>Download:
 

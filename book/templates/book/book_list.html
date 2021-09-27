@@ -1,6 +1,16 @@
 {% extends 'book/base.html' %}
 
 {% block main_area %}
+
+<h1>Book
+    {% if category %}
+    <span class="badge badge-secondary">{{category}}</span>
+    {% endif %}
+    {% if tag %}
+    <span class="badge badge-light">{{tag}}({{tag.book_set.count}})</span>
+    {% endif %}
+</h1>
+
 <!-- Book post-->
 <div class="container">
     <div class="card">
@@ -34,6 +44,20 @@
                     <div class="card-text">출판정보 : {{b.publisher}}, {{b.release_date}}</div>
                     <div class="card-text">가격 : {{b.price}}</div>
                     <p class="card-text">내용 : {{b.content | truncatewords:45}}</p>
+
+                    {% if b.tags.exists %}
+                    <i class="fas fa-tags"></i><!-- fontawesome을 활용해 tag 아이콘 사용 -->
+
+                    <!-- all 대신 iterator 사용 이유 -->
+                    <!-- 결과를 재사용하지 않고, 메모리 문제를 일으킬 만한 많은 양의 데이터를 사용할 경우는 all() 대신 iterator()를 사용해야 한다. -->
+                    {% for tag in b.tags.iterator %}
+                    <!-- 태그 하이퍼링크 생성. 클릭하면 태그 페이지로 이동한다 -->
+                    <a href="{{tag.get_absolute_url}}"><span class="'badge badge-pill badge-light">{{tag}}</span></a>
+                    {% endfor %}
+                    <br/><!-- 줄바꿈-->
+                    <br/>
+                    {% endif %}
+
                     <a class="btn btn-primary" href="{{b.get_absolute_url}}">Read more</a>
                 </div>
             </div>
