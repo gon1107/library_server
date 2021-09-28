@@ -14,9 +14,14 @@ class TestView(TestCase):
         self.category_programming = Category.objects.create(name='programming', slug='programming')
         self.category_python = Category.objects.create(name='python', slug='python')
 
-        self.tag_hello = Tag.objects.create(name='hello', slug='hello')
-        self.tag_python_kor = Tag.objects.create(name='파이썬 공부', slug='파이썬-공부')
-        self.tag_python = Tag.objects.create(name='python', slug='python')
+        self.tag_hello = Tag.objects.create(name='#hello', slug='hello')
+        self.tag_python_kor = Tag.objects.create(name='#파이썬 공부', slug='파이썬-공부')
+        self.tag_python = Tag.objects.create(name='#python', slug='python')
+
+        self.tag_best_seller = Tag.objects.create(name='#best seller', slug='best-seller')
+        self.tag_new_book = Tag.objects.create(name='#new book', slug='new-book')
+        self.tag_monthly_best = Tag.objects.create(name='#monthly best', slug='monthly-best')
+        self.tag_Top10 = Tag.objects.create(name='#Top10', slug='Top10')
 
         self.book_001 = Book.objects.create(
             title='첫 번째 책입니다.',
@@ -30,6 +35,8 @@ class TestView(TestCase):
         )
 
         self.book_001.tags.add(self.tag_hello)
+        self.book_001.tags.add(self.tag_best_seller)
+        self.book_001.tags.add(self.tag_Top10)
 
         self.book_002 = Book.objects.create(
             title='두 번째 책입니다.',
@@ -54,6 +61,7 @@ class TestView(TestCase):
 
         self.book_003.tags.add(self.tag_python_kor)
         self.book_003.tags.add(self.tag_python)
+        self.book_003.tags.add(self.tag_new_book)
 
     def navbar_test(self, soup):
         navbar = soup.nav
@@ -106,13 +114,21 @@ class TestView(TestCase):
         self.assertNotIn(self.tag_python.name, book_001_card.text)
         self.assertNotIn(self.tag_python_kor.name, book_001_card.text)
 
+        self.assertIn(self.tag_best_seller.name, book_001_card.text)
+        self.assertIn(self.tag_Top10.name, book_001_card.text)
+        self.assertNotIn(self.tag_new_book.name, book_001_card.text)
+        self.assertNotIn(self.tag_monthly_best.name, book_001_card.text)
+
         book_002_card = main_area.find('div', id='book-2')
         self.assertIn(self.book_002.title, book_002_card.text)
         self.assertIn(self.book_002.category.name, book_002_card.text)
         self.assertNotIn(self.tag_hello.name, book_002_card.text)
         self.assertNotIn(self.tag_python.name, book_002_card.text)
-        #self.assertNotIn(self.tag_python.name, book_002_card.text)
         self.assertNotIn(self.tag_python_kor.name, book_002_card.text)
+        self.assertNotIn(self.tag_best_seller.name, book_002_card.text)
+        self.assertNotIn(self.tag_Top10.name, book_002_card.text)
+        self.assertNotIn(self.tag_new_book.name, book_002_card.text)
+        self.assertNotIn(self.tag_monthly_best.name, book_002_card.text)
 
         book_003_card = main_area.find('div', id='book-3')
         self.assertIn(self.book_003.title, book_003_card.text)
@@ -120,7 +136,10 @@ class TestView(TestCase):
         self.assertNotIn(self.tag_hello.name, book_003_card.text)
         self.assertIn(self.tag_python.name, book_003_card.text)
         self.assertIn(self.tag_python_kor.name, book_003_card.text)
-
+        self.assertNotIn(self.tag_best_seller.name, book_003_card.text)
+        self.assertNotIn(self.tag_Top10.name, book_003_card.text)
+        self.assertIn(self.tag_new_book.name, book_003_card.text)
+        self.assertNotIn(self.tag_monthly_best.name, book_003_card.text)
         # 포스트가 없는 경우
 
         Book.objects.all().delete()
@@ -165,6 +184,10 @@ class TestView(TestCase):
         self.assertIn(self.tag_hello.name, book_area.text)
         self.assertNotIn(self.tag_python.name, book_area.text)
         self.assertNotIn(self.tag_python_kor.name, book_area.text)
+        self.assertIn(self.tag_best_seller.name, book_area.text)
+        self.assertIn(self.tag_Top10.name, book_area.text)
+        self.assertNotIn(self.tag_new_book.name, book_area.text)
+        self.assertNotIn(self.tag_monthly_best.name, book_area.text)
 
     def test_category_page(self):
         # 'programming' 카테고리를 가지는 포스트 글들을 출력하는 페이지로 접속한다.
