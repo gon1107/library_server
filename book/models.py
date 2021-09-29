@@ -6,7 +6,7 @@ class Tag(models.Model):
     slug = models.SlugField(max_length=200, unique=True, allow_unicode=True)
 
     def __str__(self):
-        return '#'+self.name
+        return '#' + self.name
 
     def get_absolute_url(self):
         return f'/book/tag/{self.slug}/'

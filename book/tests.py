@@ -10,18 +10,20 @@ class TestView(TestCase):
         self.client = Client()
         self.user_trump = User.objects.create_user(username='trump', password='somepassword')
         self.user_obama = User.objects.create_user(username='obama', password='somepassword')
+        self.user_obama.is_staff = True
+        self.user_obama.save()
 
         self.category_programming = Category.objects.create(name='programming', slug='programming')
         self.category_python = Category.objects.create(name='python', slug='python')
 
-        self.tag_hello = Tag.objects.create(name='#hello', slug='hello')
-        self.tag_python_kor = Tag.objects.create(name='#파이썬 공부', slug='파이썬-공부')
-        self.tag_python = Tag.objects.create(name='#python', slug='python')
+        self.tag_hello = Tag.objects.create(name='hello', slug='hello')
+        self.tag_python_kor = Tag.objects.create(name='파이썬 공부', slug='파이썬-공부')
+        self.tag_python = Tag.objects.create(name='python', slug='python')
 
-        self.tag_best_seller = Tag.objects.create(name='#best seller', slug='best-seller')
-        self.tag_new_book = Tag.objects.create(name='#new book', slug='new-book')
-        self.tag_monthly_best = Tag.objects.create(name='#monthly best', slug='monthly-best')
-        self.tag_Top10 = Tag.objects.create(name='#Top10', slug='Top10')
+        self.tag_best_seller = Tag.objects.create(name='best seller', slug='best-seller')
+        self.tag_new_book = Tag.objects.create(name='new book', slug='new-book')
+        self.tag_monthly_best = Tag.objects.create(name='monthly best', slug='monthly-best')
+        self.tag_Top10 = Tag.objects.create(name='Top10', slug='Top10')
 
         self.book_001 = Book.objects.create(
             title='첫 번째 책입니다.',
@@ -110,36 +112,41 @@ class TestView(TestCase):
         book_001_card = main_area.find('div', id='book-1')
         self.assertIn(self.book_001.title, book_001_card.text)
         self.assertIn(self.book_001.category.name, book_001_card.text)
-        self.assertIn(self.tag_hello.name, book_001_card.text)
-        self.assertNotIn(self.tag_python.name, book_001_card.text)
-        self.assertNotIn(self.tag_python_kor.name, book_001_card.text)
-
-        self.assertIn(self.tag_best_seller.name, book_001_card.text)
-        self.assertIn(self.tag_Top10.name, book_001_card.text)
-        self.assertNotIn(self.tag_new_book.name, book_001_card.text)
-        self.assertNotIn(self.tag_monthly_best.name, book_001_card.text)
+        # document.querySelector("#book-1 > div.col-md-9.col-lg-9 > div > span")
+        # # book-1 > div.col-md-9.col-lg-9 > div > span
+        # / html / body / div[2] / div / div[1] / div / div / div[1] / div[2] / div / span
+        self.assertIn(self.tag_hello.__str__(), book_001_card.text)
+        self.assertNotIn(self.tag_python.__str__(), book_001_card.text)
+        self.assertNotIn(self.tag_python_kor.__str__(), book_001_card.text)
+        # # book-1 > div.col-md-9.col-lg-9 > div > a:nth-child(10) > span
+        # document.querySelector("#book-1 > div.col-md-9.col-lg-9 > div > a:nth-child(9) > span")
+        # / html / body / div[2] / div / div[1] / div / div / div[1] / div[2] / div / a[1] / span
+        self.assertIn(self.tag_best_seller.__str__(), book_001_card.text)
+        self.assertIn(self.tag_Top10.__str__(), book_001_card.text)
+        self.assertNotIn(self.tag_new_book.__str__(), book_001_card.text)
+        self.assertNotIn(self.tag_monthly_best.__str__(), book_001_card.text)
 
         book_002_card = main_area.find('div', id='book-2')
         self.assertIn(self.book_002.title, book_002_card.text)
         self.assertIn(self.book_002.category.name, book_002_card.text)
-        self.assertNotIn(self.tag_hello.name, book_002_card.text)
-        self.assertNotIn(self.tag_python.name, book_002_card.text)
-        self.assertNotIn(self.tag_python_kor.name, book_002_card.text)
-        self.assertNotIn(self.tag_best_seller.name, book_002_card.text)
-        self.assertNotIn(self.tag_Top10.name, book_002_card.text)
-        self.assertNotIn(self.tag_new_book.name, book_002_card.text)
-        self.assertNotIn(self.tag_monthly_best.name, book_002_card.text)
+        self.assertNotIn(self.tag_hello.__str__(), book_002_card.text)
+        self.assertNotIn(self.tag_python.__str__(), book_002_card.text)
+        self.assertNotIn(self.tag_python_kor.__str__(), book_002_card.text)
+        self.assertNotIn(self.tag_best_seller.__str__(), book_002_card.text)
+        self.assertNotIn(self.tag_Top10.__str__(), book_002_card.text)
+        self.assertNotIn(self.tag_new_book.__str__(), book_002_card.text)
+        self.assertNotIn(self.tag_monthly_best.__str__(), book_002_card.text)
 
         book_003_card = main_area.find('div', id='book-3')
         self.assertIn(self.book_003.title, book_003_card.text)
         self.assertIn('미분류', book_003_card.text)
-        self.assertNotIn(self.tag_hello.name, book_003_card.text)
-        self.assertIn(self.tag_python.name, book_003_card.text)
-        self.assertIn(self.tag_python_kor.name, book_003_card.text)
-        self.assertNotIn(self.tag_best_seller.name, book_003_card.text)
-        self.assertNotIn(self.tag_Top10.name, book_003_card.text)
-        self.assertIn(self.tag_new_book.name, book_003_card.text)
-        self.assertNotIn(self.tag_monthly_best.name, book_003_card.text)
+        self.assertNotIn(self.tag_hello.__str__(), book_003_card.text)
+        self.assertIn(self.tag_python.__str__(), book_003_card.text)
+        self.assertIn(self.tag_python_kor.__str__(), book_003_card.text)
+        self.assertNotIn(self.tag_best_seller.__str__(), book_003_card.text)
+        self.assertNotIn(self.tag_Top10.__str__(), book_003_card.text)
+        self.assertIn(self.tag_new_book.__str__(), book_003_card.text)
+        self.assertNotIn(self.tag_monthly_best.__str__(), book_003_card.text)
         # 포스트가 없는 경우
 
         Book.objects.all().delete()
@@ -181,13 +188,13 @@ class TestView(TestCase):
         self.assertIn(self.book_001.content, book_area.text)
 
         # 2.7. 첫 번째 포스트의 tag.name이 포스트 영역에 있다.
-        self.assertIn(self.tag_hello.name, book_area.text)
-        self.assertNotIn(self.tag_python.name, book_area.text)
-        self.assertNotIn(self.tag_python_kor.name, book_area.text)
-        self.assertIn(self.tag_best_seller.name, book_area.text)
-        self.assertIn(self.tag_Top10.name, book_area.text)
-        self.assertNotIn(self.tag_new_book.name, book_area.text)
-        self.assertNotIn(self.tag_monthly_best.name, book_area.text)
+        self.assertIn(self.tag_hello.__str__(), book_area.text)
+        self.assertNotIn(self.tag_python.__str__(), book_area.text)
+        self.assertNotIn(self.tag_python_kor.__str__(), book_area.text)
+        self.assertIn(self.tag_best_seller.__str__(), book_area.text)
+        self.assertIn(self.tag_Top10.__str__(), book_area.text)
+        self.assertNotIn(self.tag_new_book.__str__(), book_area.text)
+        self.assertNotIn(self.tag_monthly_best.__str__(), book_area.text)
 
     def test_category_page(self):
         # 'programming' 카테고리를 가지는 포스트 글들을 출력하는 페이지로 접속한다.
@@ -235,12 +242,61 @@ class TestView(TestCase):
         self.navbar_test(soup)
         self.category_card_test(soup)
 
-        self.assertIn(self.tag_hello.name, soup.h1.text)
+        self.assertIn(self.tag_hello.__str__(), soup.h1.text)
 
         # main-area 내부에는 hello 태그이름과 book_001 글의 타이틀만 존재해야 한다.
         # 나머지는 main-area 내부에 타이틀이 존재하면 안 된다.
         main_area = soup.find('div', id='main-area')
-        self.assertIn(self.tag_hello.name, main_area.text)
+        self.assertIn(self.tag_hello.__str__(), main_area.text)
         self.assertIn(self.book_001.title, main_area.text)
         self.assertNotIn(self.book_002.title, main_area.text)
         self.assertNotIn(self.book_003.title, main_area.text)
+
+    def test_create_book(self):
+        # 로그인하지 않으면 status_code가 200이면 안 된다.
+        response = self.client.get('/blog/create_book/')
+        self.assertNotEqual(response.status_code, 200)
+
+        # staff가 아닌 trump가 로그인을 한다.
+        self.client.login(username='trump', password='somepassword')
+        response = self.client.get('/book/create_book/')
+        self.assertNotEqual(response.status_code, 200)
+
+        # staff인 obama로 로그인한다.
+        self.client.login(username='obama', password="somepassword")
+        response = self.client.get('/book/create_book/')
+        self.assertEqual(response.status_code, 200)
+        soup = BeautifulSoup(response.content, 'html.parser')
+
+        # 도서 추가 페이지의 제목이 'Create Book - Library' 이어야 한다.
+        self.assertEqual('Create Book - Book', soup.title.text)
+        # 도서 추가 페이지에 main-area 영역의 제목은 'Create New Book' 이어야 한다.
+        main_area = soup.find('div', id='main-area')
+        self.assertIn('Create New Book', main_area.text)
+
+        # 5. Book 방식으로 글 내용을 작성하고
+        # 글 작성 요청을 위한 주소를 기입한다.
+        # 첫 번째 파라메터: 클라이언트로부터 요청받을 서버주소
+        # 두 번째 파라메터: 서버로 전송할 필드명과 값을 딕셔너리 형태로 작성
+        self.client.post(
+            '/book/create_book/',
+            {
+                'title': 'Book Form 만들기',
+                'content': 'Book Form 페이지를 만듭시다.',
+                'book_author' : 'Biden',
+                'publisher' : 'Chosun',
+                'price' : 20000,
+                'release_date' : '2021-09-15',
+            }
+        )
+
+        self.assertEqual(Book.objects.count(), 4)
+        # 6. last() 함수는포스트 글 중 제일 최근에 작성한
+        # 포스트 글 하나를 가져온다.
+        last_book = Book.objects.last()
+        # 7. 제일 최근에 작성한 글의 제목과 작성자명을 비교한다.
+        # 제일 최근에 작성한 글 제목은 5번 주석에 입력했던 title이고,
+        # 작성자명은 현재 로그인한 obama이다.
+        self.assertEqual(last_book.title, 'Book Form 만들기')
+        self.assertEqual(last_book.author.username, 'obama')
+
