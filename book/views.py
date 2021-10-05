@@ -61,7 +61,6 @@ class BookCreate(LoginRequiredMixin, UserPassesTestMixin, CreateView):
                     if is_tag_created:
                         tag.slug = slugify(t, allow_unicode=True)
                         tag.save()
-
                     self.object.tags.add(tag)
 
             return response
@@ -101,7 +100,6 @@ class BookUpdate(LoginRequiredMixin, UpdateView):
     def form_valid(self, form):
         current_user = self.request.user
 
-
         # form.instance는 클라이언트에서 form을 통해 입력한 내용을 담고 있다.
         # 현재 사용자 정보를 author 필드에 채워 넣어준다. (테스트코드 오류 해결)
         form.instance.author = current_user
@@ -124,7 +122,6 @@ class BookUpdate(LoginRequiredMixin, UpdateView):
                 if is_tag_created:
                     tag.slug = slugify(t, allow_unicode=True)
                     tag.save()
-
                 self.object.tags.add(tag)
 
         return response
