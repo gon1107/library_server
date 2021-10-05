@@ -35,8 +35,6 @@
                                 <header class="mb-4">
                                     <!-- Post title-->
                                     <h1 class="fw-bolder mb-1">{{book.title}}</h1>
-                                    <!-- 요약문 출력 부분 -->
-                                    <h5 class="text-muted">{{book.hook_text}}</h5>
                                     <!-- Post meta content-->
                                     <div class="text-muted fst-italic mb-2">{{book.created_at}} by <a href="#">{{book.author}}</a></div>
                                     <div class="text-muted fst-italic mb-2">출판정보 : {{book.publisher}}, {{book.release_date}}</div>
@@ -50,8 +48,9 @@
                                     {% endif %}
                                 </header>
                             </div>
+                            <!-- 요약문 출력 부분 -->
                             <!-- Book content-->
-                            <section class="mb-5">{{book.content}}</section>
+                            <section class="mb-5">{{book.get_content_markdown | safe}}</section>
 
                             {% if book.tags.exists %}
                             <i class="fas fa-tags"></i><!-- fontawesome을 활용해 tag 아이콘 사용 -->

@@ -1,5 +1,7 @@
 from django.contrib.auth.models import User
 from django.db import models
+from markdownx.models import MarkdownxField
+from markdownx.utils import markdown
 
 class Tag(models.Model):
     name = models.CharField(max_length=50)
@@ -34,7 +36,7 @@ class Book(models.Model):
     release_date = models.DateField()
     created_at = models.DateField(auto_now_add=True)
     updated_at = models.DateField(auto_now=True)
-    content = models.TextField()
+    content = MarkdownxField()
 
     head_image = models.ImageField(upload_to='book/images/%Y/%m/%d/', blank=True)
     file_upload =models.FileField(upload_to='book/files/%Y/%m/%d/', blank=True)
@@ -54,3 +56,5 @@ class Book(models.Model):
     def get_absolute_url(self):
         return f'/book/{self.pk}/'
 
+    def get_content_markdown(self):
+        return markdown(self.content)

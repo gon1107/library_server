@@ -51,7 +51,7 @@
                     <div class="card-text">저자 : {{b.book_author}}</div>
                     <div class="card-text">출판정보 : {{b.publisher}}, {{b.release_date}}</div>
                     <div class="card-text">가격 : {{b.price}}</div>
-                    <p class="card-text">내용 : {{b.content | truncatewords:45}}</p>
+                    <p class="card-text">내용 : {{b.get_content_markdown | truncatewords_html:45 | safe}}</p>
 
                     {% if b.tags.exists %}
                     <i class="fas fa-tags"></i><!-- fontawesome을 활용해 tag 아이콘 사용 -->

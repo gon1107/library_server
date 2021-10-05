@@ -16,24 +16,13 @@ text/plain: 공백문자는 '+' 기호로 변환하고, 나머지 문자는 모�
 action (장고에서 생략): 데이터의 종착지 주소를 작성(보통은 서버의 특정 주소)
 -->
 <form method="post" enctype="multipart/form-data">{% csrf_token %}
-    <!--
-    2. CSRF (Cross-Site Request Forgery): 사이트 간 요청 위조
-    웹사이트 취약점 공격의 하나로, 사용자가 자신의 의지와는 무관하게
-    공격자가 의도한 행위를 특정 웹사이트에 요청하게 하는 공격을 말한다. <위키백과>
-    -->
-    <table>
-        {{form}}
-        <tr>
-            <th><label for="id_tags_str">Tags:</label></th>
-            <!-- input 태그 -->
-            <!-- type: 입력받을 자료의 타입을 설정. 여기서는 텍스트를 입력 -->
-            <!-- name: input 태그에서 입력받은 정보를 저장할 변수명 작성 -->
-            <!-- id: 현재 html 문서에서 유일한 값을 명명하여
-                    해당 태그를 찾기 쉽도록 만들어준다.
-            -->
-            <td><input type="text" name="tags_str" id="id_tags_str" value="{{tags_str_default}}"></td>
-        </tr>
-    </table>
+    {{form | crispy}}
+    <div id="div_id_tags_str">
+        <labe for="id_tags_str">Tags:</labe>
+        <input type="text" name="tags_str" id="id_tags_str" class="textinput textInput form-control" value="{{tags_str_default}}">
+    </div>
+    </br>
     <button type="submit" class="btn btn-primary float-right">Submit</button>
 </form>
+{{form.media}}
 {% endblock %}
