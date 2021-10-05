@@ -1,6 +1,8 @@
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
+from django.core.exceptions import PermissionDenied
 from django.shortcuts import render, redirect
-from django.views.generic import ListView, DetailView, CreateView
+from django.utils.text import slugify
+from django.views.generic import ListView, DetailView, CreateView, UpdateView
 
 from book.models import Book, Category, Tag
 
@@ -43,25 +45,100 @@ class BookCreate(LoginRequiredMixin, UserPassesTestMixin, CreateView):
             # form.instance는 클라이언트에서 form을 통해 입력한 내용을 담고 있다.
             # 현재 사용자 정보를 author 필드에 채워 넣어준다. (테스트코드 오류 해결)
             form.instance.author = current_user
-            # 원하는 부분 처리가 끝나고 최종적으로 BookCreata 클래스의 부모인
-            # CreateView 클래스의 form_valid()함수를 실행한다.
-            # 실행할 때 author 필드가 채워진 form 객체를 전달받아
-            # 기존에 CreateView가 했던 데이터베이스에 글 등록 기능을 수행하게 된다.
-            return super(BookCreate, self).form_valid(form)
+
+            response = super(BookCreate, self).form_valid(form)
+
+            tags_str = self.request.POST.get('tags_str')
+
+            if tags_str:
+                tags_str = tags_str.strip()
+                tags_str = tags_str.replace(',', ';')
+                tags_list = tags_str.split(';')
+
+                for t in tags_list:
+                    t = t.strip()
+                    tag, is_tag_created = Tag.objects.get_or_create(name=t)
+                    if is_tag_created:
+                        tag.slug = slugify(t, allow_unicode=True)
+                        tag.save()
+
+                    self.object.tags.add(tag)
+
+            return response
         else:
             # 현재 사용자가 로그아웃 상태일 경우는 목록 페이지로 이동한다.
             # 이동하고자 하는 URL 주소를 redirect() 함수의 파라메터로 넘겨주면 된다.
             return redirect('/book/')
+
+class BookUpdate(LoginRequiredMixin, UpdateView):
+    model = Book
+    fields = ['title', 'hook_text', 'book_author', 'publisher', 'price', 'release_date', 'content', 'head_image', 'file_upload', 'category']
+
+    template_name = 'book/book_update_form.html'
+
+    def test_func(self):
+        return self.request.user.is_superuser or self.request.user.is_staff
+
+    def get_context_data(self, **kwargs):
+        context = super(BookUpdate, self).get_context_data()
+
+        if self.object.tags.exists():
+            tags_str_list = list()
+
+            for t in self.object.tags.all():
+                tags_str_list.append(t.name)
+
+            context['tags_str_default'] = '; '.join(tags_str_list)
+
+        return context
+
+    def dispatch(self, request, *args, **kwargs):
+        if request.user.is_authenticated and request.user == self.get_object().author:
+            return super(BookUpdate, self).dispatch(request, *args, **kwargs)
+        else:
+            raise PermissionDenied
+
+    def form_valid(self, form):
+        current_user = self.request.user
+
+
+        # form.instance는 클라이언트에서 form을 통해 입력한 내용을 담고 있다.
+        # 현재 사용자 정보를 author 필드에 채워 넣어준다. (테스트코드 오류 해결)
+        form.instance.author = current_user
+        # 먼저 부모 클래스의 form_valid() 함수를 이용하여, 필수값이 잘 입력되었는지 확인
+        # form_valid()는 추후 클라이언트로 보낼 response(응답) 내용을 리턴한다.
+
+        response = super(BookUpdate, self).form_valid(form)
+        self.object.tags.clear()
+
+        tags_str = self.request.POST.get('tags_str')
+
+        if tags_str:
+            tags_str = tags_str.strip()
+            tags_str = tags_str.replace(',', ';')
+            tags_list = tags_str.split(';')
+
+            for t in tags_list:
+                t = t.strip()
+                tag, is_tag_created = Tag.objects.get_or_create(name=t)
+                if is_tag_created:
+                    tag.slug = slugify(t, allow_unicode=True)
+                    tag.save()
+
+                self.object.tags.add(tag)
+
+        return response
+
 
 def category_page(request, slug):
     if slug == 'no_category':
         category = '미분류'
         book_list = Book.objects.filter(category=None)
     else:
-    # URL을 통해서 전달받은 slug 변수를 이용하여
-    # Category 테이블을 조회한다.
-    # 예) slug 값이 'programming'이면 Category 테이블에서 slug 값이 'programming'인
-    # 'programming' 카테고리 객체를 가져와 Category 변수에 담는다.
+        # URL을 통해서 전달받은 slug 변수를 이용하여
+        # Category 테이블을 조회한다.
+        # 예) slug 값이 'programming'이면 Category 테이블에서 slug 값이 'programming'인
+        # 'programming' 카테고리 객체를 가져와 Category 변수에 담는다.
         category = Category.objects.get(slug=slug)
         book_list = Book.objects.filter(category=category)
 

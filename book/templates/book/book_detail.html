@@ -41,6 +41,13 @@
                                     <div class="text-muted fst-italic mb-2">{{book.created_at}} by <a href="#">{{book.author}}</a></div>
                                     <div class="text-muted fst-italic mb-2">출판정보 : {{book.publisher}}, {{book.release_date}}</div>
                                     <div class="text-muted fst-italic mb-2">가격 : {{book.price}}</div>
+                                    <!-- 로그인하고 로그인한 사용자와 글 작성자 일치여부 확인 -->
+                                    <!-- 일치하면 버튼이 화면에 표시되고, 그렇지 않으면 보이지 않는다. -->
+                                    {% if user.is_authenticated and user == book.author %}
+                                    <a class="btn btn-info btn-sm float-right" href="/book/update_book/{{book.pk}}/" role="button">
+                                        <i class="fas fa-pen"></i> Edit Book
+                                    </a>
+                                    {% endif %}
                                 </header>
                             </div>
                             <!-- Book content-->
