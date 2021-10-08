@@ -3,15 +3,14 @@
 <!-- 네비게이션바 영역 (992px보다 크면 메뉴 확장버튼 숨겨짐, 배경은 검은색)-->
 <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
     <div class="container">
-        <!-- 브랜드 명을 입력하는 부분-->
-        <a class="navbar-brand" href="/">Library</a>
         <!-- navbar-expand-lg 클래스를 nav 태그에서 사용한 경우는 992px보다 작을 경우 아래 버튼 표시-->
         <!-- 아래 버튼은 폰 화면 크기에서 메뉴를 보였다 숨겼다 하는 버튼-->
         <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent">
             <!-- 확장 버튼 아이콘 모양을 결정-->
             <span class="navbar-toggler-icon"></span>
         </button>
-
+        <!-- 브랜드 명을 입력하는 부분-->
+        <a class="navbar-brand mr-auto" href="/">Library</a>
         <!-- 위 button을 눌렀을 때 나타났다 사라지는 메뉴 부분-->
         <!-- 메뉴 구성하는 부분-->
         <div class="collapse navbar-collapse" id="navbarSupportedContent">
@@ -25,11 +24,22 @@
                 <li class="nav-item">
                     <a class="nav-link" href="/info/">도서관안내</a>
                 </li>
+                <!-- 세 번째 메뉴-->
+                <li class="nav-item">
+                    <a class="nav-link" href="/search/">자료검색</a>
+                </li>
+                <!-- 네 번째 메뉴-->
+                <li class="nav-item">
+                    <a class="nav-link" href="#">소장자료</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/book/">도서목록</a>
+                </li>
             </ul>
-            <!-- 세 번째 메뉴 (드롭다운 메뉴)-->
         </div>
-        <!-- 로그인 버튼-->
-        <ul class="navbar-nav ml-auto">
+
+        <!-- 다섯 번째 메뉴 (드롭다운 메뉴)-->
+        <ul class="navbar-nav">
             {% if user.is_authenticated %}
             <li class="nav-item dropdown">
                 <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownMenuLink"
@@ -42,11 +52,12 @@
                     </a>
                 </div>
             </li>
+            <!-- 로그인 버튼-->
             {% else %}
             </li class="nav-item">
-                <a class="nav-link" href="#" data-toggle="modal" data-target="#loginModal">
-                    Log In
-                </a>
+            <a class="nav-link" href="#" data-toggle="modal" data-target="#loginModal">
+                Log In
+            </a>
             </li>
             {% endif %}
         </ul>

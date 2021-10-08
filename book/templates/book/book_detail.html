@@ -1,5 +1,5 @@
 {% extends 'book/base.html' %}
-
+{% load crispy_forms_tags %}
 {% block head_title %}
 {{book.title}} - 도서목록
 {% endblock %}
@@ -33,9 +33,9 @@
                             <div class="col-md-9 col-lg-9">
                                 <!-- Book header-->
                                 <header class="mb-4">
-                                    <!-- Post title-->
+                                    <!-- Book title-->
                                     <h1 class="fw-bolder mb-1">{{book.title}}</h1>
-                                    <!-- Post meta content-->
+                                    <!-- Book meta content-->
                                     <div class="text-muted fst-italic mb-2">{{book.created_at}} by <a href="#">{{book.author}}</a></div>
                                     <div class="text-muted fst-italic mb-2">출판정보 : {{book.publisher}}, {{book.release_date}}</div>
                                     <div class="text-muted fst-italic mb-2">가격 : {{book.price}}</div>
@@ -83,6 +83,120 @@
                         </div>
                     </div>
                 </article>
+            </div>
+            <div id ="review-area">
+                <!-- Reviews section-->
+                <section class="mb-5">
+                    <div class="card bg-light">
+                        <div class="card-body">
+                            <!-- Review form-->
+                            <!-- 현재 사용자가 로그인된 경우 -->
+                            {% if user.is_authenticated %}
+                            <!-- POST 방식으로 서버에 요청을 보내기 위해 form 태그 작성 -->
+                            <!-- action 속성은 서버에 요청할 때의 주소를 작성 -->
+                            <!-- 예) 첫 번째 포스트의 댓글 추가 주소는 /book/1/new_review/이다. -->
+                            <form id="review-form" method="POST" action="{{book.get_absolute_url}}new_review/" class="mb-4">
+                                {% csrf_token %}
+                                <!-- 여러 줄을 작성할 때는 textarea 태그를 사용한다 -->
+                                <!-- rows 속성은 처음 화면에 노출될 때 줄 수를 의미한다. 예) rows="3"은 세 줄 -->
+                                <!-- placeholder 속성은 어떤 내용을 입력해야 할지에 대한 안내문 역할 -->
+                                <div class="form-group">
+                                    {{review_form | crispy}}
+                                    <!-- 별점 기능 추가 -->
+                                    <label for="id_stars" class="requiredField">
+                                        Score<span class="asteriskField">★</span>
+                                    </label>
+                                    <div class="form-group" id="id_stars">
+                                        <button class="star" data-value="1"></button>
+                                        <button class="star" data-value="2"></button>
+                                        <button class="star" data-value="3"></button>
+                                        <button class="star" data-value="4"></button>
+                                        <button class="star" data-value="5"></button>
+                                    </div>
+                                    <input type="hidden" name="my_score" id="id_my_score">
+                                </div>
+
+                                <!-- textarea에 작성한 댓글을 전송하기 위한 버튼을 생성 -->
+                                <!-- form 태그 내부에 type이 submit인 버튼을 만들어야 전송이 가능하다. -->
+                                <button type="submit" class="btn btn-primary">Submit</button>
+                            </form>
+                            <!-- 로그인하지 않은 경우는 버튼 하나가 표시되는데 -->
+                            <!-- 버튼을 누르게 되면 navbar.html에서 작성한 loginModal을 출력하도록 작성 -->
+                            {% else %}
+                            <a role="button" class="btn btn-outline-dark btn-block btn-sm" href="#" data-toggle="modal" data-target="#loginModal">
+                                Log in and leave a review
+                            </a>
+                            {% endif %}
+                            <!-- Single review-->
+                            {% if book.review_set.exists %}
+                            {% for review in book.review_set.iterator %}
+                            <div id="review-{{review.pk}}" data-score="{{review.score}}">
+                                <div class="d-flex">
+                                    <div class="flex-shrink-0">
+                                        <img class="rounded-circle" src="https://dummyimage.com/50x50/ced4da/6c757d.jpg" alt="..." />
+                                    </div>
+                                    <div class="mr-auto">
+                                        <div class="fw-bold">{{review.author.username}}
+                                            <small class="text-muted">{{review.created_at}}</small>
+                                        </div>
+                                        <p class="text-muted text-right">
+                                            <small>Score:&nbsp;{{review.score}}</small>
+                                        </p>
+                                        <p>{{review.content | linebreaks}}</p>
+                                    </div>
+                                    {% if user.is_authenticated and review.author == user %}
+                                    <div>
+                                        <div class="float-right">
+                                            <a role="button"
+                                               class="btn btn-sm btn-info float-right"
+                                               id="review-{{review.pk}}-update-btn"
+                                               href="/book/update_review/{{review.pk}}/">
+                                                edit
+                                            </a>
+                                            <a roll="button"
+                                               href="#"
+                                               id="review-{{review.pk}}-delete-modal-btn"
+                                               class="btn btn-sm btn-danger"
+                                               data-toggle="modal" data-target="#deleteReviewModal-{{review.pk}}">
+                                                delete
+                                            </a>
+                                        </div>
+                                    </div>
+
+                                    <!-- Modal -->
+                                    <div class="modal fade" id="deleteReviewModal-{{review.pk}}" tabindex="-1" role="dialog" aria-labelledby="deleteReviewModalLabel" aria-hidden="true">
+                                        <div class="modal-dialog" role="document">
+                                            <div class="modal-content">
+                                                <div class="modal-header">
+                                                    <h5 class="modal-title" id="deleteModalLabel">Are You Sure?</h5>
+                                                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                                        <span aria-hidden="true">&times;</span>
+                                                    </button>
+                                                </div>
+                                                <div class="modal-body">
+                                                    <del>{{review | linebreaks}}</del>
+                                                </div>
+                                                <div class="modal-footer">
+                                                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                                                    <a roll="button" class="btn btn-danger" href="/book/delete_review/{{review.pk}}/">Delete</a>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    {% endif %}
+                                </div>
+
+                                <div>
+                                    {% if review.created_at != review.modified_at %}
+                                    <p class="text-muted text-right"><small>Updated: {{review.modified_at}}</small></p>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            {% endfor %}
+                            {% endif %}
+                        </div>
+                    </div>
+                </section>
             </div>
         </div>
     </div>

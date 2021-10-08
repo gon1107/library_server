@@ -2,7 +2,7 @@ from bs4 import BeautifulSoup
 from django.contrib.auth.models import User
 from django.test import TestCase, Client
 
-from book.models import Book, Category, Tag
+from book.models import Book, Category, Tag, Review
 
 
 class TestView(TestCase):
@@ -61,6 +61,13 @@ class TestView(TestCase):
         )
 
         self.book_003.tags.add(self.tag_new_book)
+
+        self.review_001 = Review.objects.create(
+            book=self.book_001,
+            author=self.user_obama,
+            content='첫 번째 댓글입니다.',
+            score=5,
+        )
 
     def navbar_test(self, soup):
         navbar = soup.nav
@@ -182,6 +189,12 @@ class TestView(TestCase):
         self.assertNotIn(self.tag_new_book.__str__(), book_area.text)
         self.assertNotIn(self.tag_monthly_best.__str__(), book_area.text)
 
+        # review area
+        reviews_area = soup.find('div', id='review-area')
+        review_001_area = reviews_area.find('div', id='review-1')
+        self.assertIn(self.review_001.author.username, review_001_area.text)
+        self.assertIn(self.review_001.content, review_001_area.text)
+
     def test_category_page(self):
         # 'programming' 카테고리를 가지는 포스트 글들을 출력하는 페이지로 접속한다.
         # 접속 후 응답 내용들은 response 변수에 저장된다.
@@ -240,7 +253,7 @@ class TestView(TestCase):
 
     def test_create_book(self):
         # 로그인하지 않으면 status_code가 200이면 안 된다.
-        response = self.client.get('/blog/create_book/')
+        response = self.client.get('/book/create_book/')
         self.assertNotEqual(response.status_code, 200)
 
         # staff가 아닌 trump가 로그인을 한다.
@@ -286,7 +299,7 @@ class TestView(TestCase):
         self.assertEqual(last_book.title, 'Book Form 만들기')
         self.assertEqual(last_book.author.username, 'obama')
 
-    def test_update_post(self):
+    def test_update_book(self):
         update_book_url = f'/book/update_book/{self.book_001.pk}/'
 
         # 로그인하지 않은 경우
@@ -331,7 +344,7 @@ class TestView(TestCase):
         self.assertIn('베스트셀러; Top10', tag_str_input.attrs['value'])
 
         # 글을 수정하기 위해 POST 방식으로 수정 내용을 서버로 전달한다.
-        # POST update_post_url에 대한 처리는 장고가 자동으로 처리해준다.
+        # POST update_book_url에 대한 처리는 장고가 자동으로 처리해준다.
         # 두 번째 파라메터는 수정할 내용을 필드명과 수정내용 작성하여 딕셔너리 형태로 만든다.
         # 세 번째 파라메터 flollow=True는 글 수정 이후
         # 테스트 코드에서 우리가 페이지 이동하는 코드를 작성하지 않더라도
@@ -340,7 +353,7 @@ class TestView(TestCase):
         response = self.client.post(
             update_book_url,
             {
-                'title': '  dasdadasdd  첫 번째 도서를 수정했습니다.',
+                'title': '첫 번째 도서를 수정했습니다.',
                 'content': '최고의 베스트셀러 첫 번째 도서의 내용입니다.',
                 'book_author': 'Biden',
                 'publisher': 'Chosun',
@@ -364,3 +377,162 @@ class TestView(TestCase):
         self.assertIn('베스트셀러', main_area.text)
         self.assertIn('Top10', main_area.text)
         self.assertIn('신간', main_area.text)
+
+    def test_review_form(self):
+        self.assertEqual(Review.objects.count(), 1)
+        self.assertEqual(self.book_001.review_set.count(), 1)
+
+        # 로그인하지 않은 상태
+        response = self.client.get(self.book_001.get_absolute_url())
+        self.assertEqual(response.status_code, 200)
+        soup = BeautifulSoup(response.content, 'html.parser')
+
+        review_area = soup.find('div', id='review-area')
+        self.assertIn('Log in and leave a review', review_area.text)
+        self.assertFalse(review_area.find('form', id='review-form'))
+
+        # 로그인한 상태
+        self.client.login(username='obama', password='somepassword')
+        response = self.client.get(self.book_001.get_absolute_url())
+        self.assertEqual(response.status_code, 200)
+        soup = BeautifulSoup(response.content, 'html.parser')
+
+        review_area = soup.find('div', id='review-area')
+        self.assertNotIn('Log in and leave a review', review_area.text)
+
+        review_form = review_area.find('form', id='review-form')
+        self.assertTrue(review_form.find('textarea', id='id_content'))
+        response = self.client.post(
+            self.book_001.get_absolute_url() + 'new_review/',
+            {
+                'content': "오바마의 댓글입니다.",
+                'score': 4
+            },
+            follow=True,
+        )
+
+        self.assertEqual(response.status_code, 200)
+
+        # 전체 댓글의 수는 2개
+        self.assertEqual(Review.objects.count(), 2)
+        self.assertEqual(self.book_001.review_set.count(), 2)
+
+        new_review = Review.objects.last()
+
+        soup = BeautifulSoup(response.content, 'html.parser')
+        self.assertIn(new_review.book.title, soup.title.text)
+
+        review_area = soup.find('div', id='review-area')
+        new_review_div = review_area.find('div', id=f'review-{new_review.pk}')
+        self.assertIn('obama', new_review_div.text)
+        self.assertIn('오바마의 댓글입니다.', new_review_div.text)
+
+    def test_review_update(self):
+        comment_by_trump = Review.objects.create(
+            book=self.book_001,
+            author=self.user_trump,
+            content='트럼프의 댓글입니다.',
+            score=4,
+        )
+
+        response = self.client.get(self.book_001.get_absolute_url())
+        self.assertEqual(response.status_code, 200)
+        soup = BeautifulSoup(response.content, 'html.parser')
+
+        review_area = soup.find('div', id='review-area')
+        self.assertFalse(review_area.find('a', id='review-1-update-btn'))
+        self.assertFalse(review_area.find('a', id='review-2-update-btn'))
+
+        # 로그인한 상태
+        self.client.login(username='obama', password='somepassword')
+        response = self.client.get(self.book_001.get_absolute_url())
+        self.assertEqual(response.status_code, 200)
+        soup = BeautifulSoup(response.content, 'html.parser')
+
+        review_area = soup.find('div', id='review-area')
+        self.assertFalse(review_area.find('a', id='review-2-update-btn'))
+        review_001_update_btn = review_area.find('a', id='review-1-update-btn')
+        self.assertIn('edit', review_001_update_btn.text)
+        self.assertEqual(review_001_update_btn.attrs['href'], '/book/update_review/1/')
+
+        self.assertIn('edit', review_001_update_btn.text)
+        self.assertEqual(review_001_update_btn.attrs['href'], '/book/update_review/1/')
+
+        response = self.client.get('/book/update_review/1/')
+        self.assertEqual(response.status_code, 200)
+        soup = BeautifulSoup(response.content, 'html.parser')
+
+        self.assertEqual('Edit Review - Library', soup.title.text)
+        update_review_form = soup.find('form', id='review-form')
+        content_textarea = update_review_form.find('textarea', id='id_content')
+        self.assertIn(self.review_001.content, content_textarea.text)
+
+        response = self.client.post(
+            f'/book/update_review/{self.review_001.pk}/',
+            {
+                'content': "오바마의 댓글을 수정합니다.",
+                'score': 4,
+            },
+            follow=True,
+        )
+
+        self.assertEqual(response.status_code, 200)
+        soup = BeautifulSoup(response.content, 'html.parser')
+        review_001_div = soup.find('div', id='review-1')
+        self.assertIn('오바마의 댓글을 수정합니다.', review_001_div.text)
+        self.assertIn('Updated: ', review_001_div.text)
+
+    def test_delete_review(self):
+        review_by_trump = Review.objects.create(
+            book=self.book_001,
+            author=self.user_trump,
+            content='트럼프의 댓글입니다.',
+            score=4,
+        )
+
+        self.assertEqual(Review.objects.count(), 2)
+        self.assertEqual(self.book_001.review_set.count(), 2)
+
+        # 로그인하지 않은 상태
+        response = self.client.get(self.book_001.get_absolute_url())
+        self.assertEqual(response.status_code, 200)
+        soup = BeautifulSoup(response.content, 'html.parser')
+
+        review_area = soup.find('div', id='review-area')
+        self.assertFalse(review_area.find('a', id='review-1-delete-btn'))
+        self.assertFalse(review_area.find('a', id='review-2-delete-btn'))
+
+        # trump로 로그인한 상태
+        self.client.login(username='trump', password='somepassword')
+        response = self.client.get(self.book_001.get_absolute_url())
+        self.assertEqual(response.status_code, 200)
+
+        soup = BeautifulSoup(response.content, 'html.parser')
+
+        review_area = soup.find('div', id='review-area')
+        self.assertFalse(review_area.find('a', id='review-1-delete-btn'))
+        review_002_delete_modal_btn = review_area.find('a', id='review-2-delete-modal-btn')
+        self.assertIn('delete', review_002_delete_modal_btn.text)
+        self.assertEqual(
+            review_002_delete_modal_btn.attrs['data-target'],
+            '#deleteReviewModal-2'
+        )
+
+        delete_review_modal_002 = soup.find('div', id='deleteReviewModal-2')
+        self.assertIn('Are You Sure?', delete_review_modal_002.text)
+        really_delete_btn_002 = delete_review_modal_002.find('a')
+        self.assertIn('Delete', really_delete_btn_002.text)
+        self.assertEqual(
+            really_delete_btn_002.attrs['href'],
+            '/book/delete_review/2/'
+        )
+
+        response = self.client.get('/book/delete_review/2/', follow=True)
+        self.assertEqual(response.status_code, 200)
+        soup = BeautifulSoup(response.content, 'html.parser')
+        self.assertIn(self.book_001.title, soup.title.text)
+        review_area = soup.find('div', id='review-area')
+        self.assertNotIn('트럼프의 댓글입니다.', review_area.text)
+
+        self.assertEqual(Review.objects.count(), 1)
+        self.assertEqual(self.book_001.review_set.count(), 1)

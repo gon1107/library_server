@@ -1,10 +1,12 @@
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.core.exceptions import PermissionDenied
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.utils.text import slugify
 from django.views.generic import ListView, DetailView, CreateView, UpdateView
 
-from book.models import Book, Category, Tag
+from book.forms import ReviewForm
+from book.models import Book, Category, Tag, Review
+
 
 class BookList(ListView):
     model = Book;
@@ -23,6 +25,7 @@ class BookDetail(DetailView):
         context = super(BookDetail, self).get_context_data()
         context['categories'] = Category.objects.all()
         context['no_category_book_count'] = Book.objects.filter(category=None).count()
+        context['review_form'] = ReviewForm
         return context
 
 class BookCreate(LoginRequiredMixin, UserPassesTestMixin, CreateView):
@@ -57,6 +60,13 @@ class BookCreate(LoginRequiredMixin, UserPassesTestMixin, CreateView):
 
                 for t in tags_list:
                     t = t.strip()
+                    slug = slugify(t, allow_unicode=True)
+
+                    if len(slug):
+                        pass
+                    else:
+                        return redirect('/book/create_book/?error=true')
+
                     tag, is_tag_created = Tag.objects.get_or_create(name=t)
                     if is_tag_created:
                         tag.slug = slugify(t, allow_unicode=True)
@@ -118,6 +128,14 @@ class BookUpdate(LoginRequiredMixin, UpdateView):
 
             for t in tags_list:
                 t = t.strip()
+
+                slug = slugify(t, allow_unicode=True)
+
+                if len(slug):
+                    pass
+                else:
+                    return redirect(f'/book/update_book/{self.object.pk}?error=true')
+
                 tag, is_tag_created = Tag.objects.get_or_create(name=t)
                 if is_tag_created:
                     tag.slug = slugify(t, allow_unicode=True)
@@ -180,3 +198,60 @@ def tag_page(request, slug):
             'no_category_book_count': Book.objects.filter(category=None).count(),
         }
     )
+
+def new_review(request, pk):
+    if request.user.is_authenticated:
+        book = get_object_or_404(Book, pk=pk)
+
+        if request.method == 'POST':
+            review_form = ReviewForm(request.POST)
+            if review_form.is_valid():
+                review = review_form.save(commit=False)
+                review.book = book
+                review.author = request.user
+                
+                # 우리가 만든 별점 버튼을 이용해서 받은 별점을 review의 score
+                # 필드에 저장
+                review.score = request.POST.get('my_score')
+                review.save()
+                return redirect(review.get_absolute_url())
+            else:
+                return redirect(book.get_absolute_url())
+        else:
+            raise PermissionDenied
+
+class ReviewUpdate(LoginRequiredMixin, UpdateView):
+    model = Review
+    form_class = ReviewForm
+
+    def dispatch(self, request, *args, **kwargs):
+        if request.user.is_authenticated and request.user == self.get_object().author:
+            return super(ReviewUpdate, self).dispatch(request, *args, **kwargs)
+        else:
+            raise PermissionDenied
+
+    def form_valid(self, form):
+        # current_user = self.request.user
+        # form.instance.author = current_user
+
+        response = super(ReviewUpdate, self).form_valid(form)
+
+        my_score = self.request.POST.get('my_score')
+
+        if my_score and (0 < int(my_score) <= 5):
+            self.object.score = my_score
+            self.object.save()
+
+        else:
+            raise ValueError('별점은 1~5 점을 입력하셔야 합니다.')
+
+        return response
+
+def delete_review(request, pk):
+    review = get_object_or_404(Review, pk=pk)
+    book = review.book
+    if request.user.is_authenticated and request.user == review.author:
+        review.delete()
+        return redirect(book.get_absolute_url())
+    else:
+        raise PermissionDenied

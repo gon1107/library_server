@@ -1,0 +1,32 @@
+{% extends 'book/base_full_width.html' %}
+{% load crispy_forms_tags %}
+{% block head_title %}Edit Review - Library{% endblock %}
+
+<!-- base.html의 main_area block을 찾아 아래 html 태그들로 변경 -->
+{% block main_area %}
+<h1>Edit Review</h1>
+<hr/>
+<form method="post" id="review-form">{% csrf_token %}
+    <!--
+    2. CSRF (Cross-Site Request Forgery): 사이트 간 요청 위조
+    웹사이트 취약점 공격의 하나로, 사용자가 자신의 의지와는 무관하게
+    공격자가 의도한 행위를 특정 웹사이트에 요청하게 하는 공격을 말한다. <위키백과>
+    -->
+    {{form | crispy}}
+    <!-- 별점기능 추가 -->
+    <div class="form-group">
+        <label for="id_stars" class="requiredField">
+            Score<span class="asteriskField">★</span>
+        </label>
+        <div class="form-group" id="id_stars">
+            <button class="star" data-value="1"></button>
+            <button class="star" data-value="2"></button>
+            <button class="star" data-value="3"></button>
+            <button class="star" data-value="4"></button>
+            <button class="star" data-value="5"></button>
+        </div>
+        <input type="hidden" name="my_score" id="id_my_score">
+    </div>
+    <button type="submit" class="btn btn-primary float-right">Submit</button>
+</form>
+{% endblock %}
