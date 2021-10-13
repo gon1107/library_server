@@ -11,6 +11,9 @@
 {% endif %}
 
 <h1>Book
+    {% if search_info %}
+    <small class="text-muted">{{search_info}}</small>
+    {% endif %}
     {% if category %}
     <span class="badge badge-secondary">{{category}}</span>
     {% endif %}
@@ -38,6 +41,9 @@
             <div class="col-md-9 col-lg-9">
                 <!-- 블로그 글의 요약 부분-->
                 <div class="card-body">
+                    {% if b.rental_set.exists %}
+                    <span class="badge badge-secondary float-right">대출중</span>
+                    {% endif %}
                     {% if b.category %}
                     <span class="badge badge-secondary float-right">{{b.category}}</span>
                     {% else %}
@@ -76,13 +82,32 @@
         {% endif %}
     </div>
 </div>
+{% if is_paginated %}
 <!-- Pagination-->
 <ul class="pagination justify-content-center mb-4">
+    {% if page_obj.has_next %}
     <li class="page-item">
+        <a class="page-link" href="?page={{page_obj.next_page_number}}">
+            &larr;Older
+        </a>
+    </li>
+    {% else %}
+    <li class="page-item disabled">
         <a class="page-link" href="#">&larr; Older</a>
     </li><!-- Escape String-->
+    {% endif %}
+
+    {% if page_obj.has_previous %}
+    <li class="page-item">
+        <a class="page-link" href="?page={{page_obj.previous_page_number}}">
+            Newer&rarr;
+        </a>
+    </li>
+    {% else %}
     <li class="page-item disabled">
         <a class="page-link" href="#">Newer &rarr;</a>
     </li>
+    {% endif %}
 </ul>
+{% endif %}
 {% endblock %}

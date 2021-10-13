@@ -1,21 +1,25 @@
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
+from django.contrib.auth.models import User
 from django.core.exceptions import PermissionDenied
+from django.db.models import Q
 from django.shortcuts import render, redirect, get_object_or_404
 from django.utils.text import slugify
 from django.views.generic import ListView, DetailView, CreateView, UpdateView
 
-from book.forms import ReviewForm
-from book.models import Book, Category, Tag, Review
+from book.forms import ReviewForm, RentalForm
+from book.models import Book, Category, Tag, Review, Rental
 
 
 class BookList(ListView):
-    model = Book;
+    model = Book
     order = '-pk'
+    paginate_by = 3
 
     def get_context_data(self, *, object_list=None, **kwargs):
         context = super(BookList, self).get_context_data()
         context['categories'] = Category.objects.all()
         context['no_category_book_count'] = Book.objects.filter(category=None).count()
+        # context['rental'] = Book.objects.get(pk=self.request.POST.get()).rental_set.all()
         return context
 
 class BookDetail(DetailView):
@@ -25,7 +29,9 @@ class BookDetail(DetailView):
         context = super(BookDetail, self).get_context_data()
         context['categories'] = Category.objects.all()
         context['no_category_book_count'] = Book.objects.filter(category=None).count()
+        context['rental'] = Book.objects.get(pk=self.kwargs['pk']).rental_set.all().first()
         context['review_form'] = ReviewForm
+        context['rental_form'] = RentalForm
         return context
 
 class BookCreate(LoginRequiredMixin, UserPassesTestMixin, CreateView):
@@ -199,6 +205,23 @@ def tag_page(request, slug):
         }
     )
 
+# def rental_page(request, pk):
+#     rental = Rental.objects.get(pk=pk)
+#
+#     book_list = Book.objects.all()
+#
+#
+#     return render(
+#         request,
+#         'book/book_list.html',
+#         {
+#             'book_list': book_list,
+#             'rental':rental,
+#             'categories': Category.objects.all(),
+#             'no_category_book_count': Book.objects.filter(category=None).count(),
+#         }
+#     )
+
 def new_review(request, pk):
     if request.user.is_authenticated:
         book = get_object_or_404(Book, pk=pk)
@@ -241,7 +264,6 @@ class ReviewUpdate(LoginRequiredMixin, UpdateView):
         if my_score and (0 < int(my_score) <= 5):
             self.object.score = my_score
             self.object.save()
-
         else:
             raise ValueError('별점은 1~5 점을 입력하셔야 합니다.')
 
@@ -252,6 +274,61 @@ def delete_review(request, pk):
     book = review.book
     if request.user.is_authenticated and request.user == review.author:
         review.delete()
+        return redirect(book.get_absolute_url())
+    else:
+        raise PermissionDenied
+
+class BookSearch(BookList):
+    paginate_by = None
+
+    def get_queryset(self):
+        q = self.kwargs['q']
+        book_list = Book.objects.filter(
+            Q(title__contains=q) | Q(tags__name__contains=q)
+        ).distinct()# distinct() 중복 제거
+        return book_list
+
+    def get_context_data(self, **kwargs):
+        context = super(BookSearch, self).get_context_data()
+        q = self.kwargs['q']
+        context['search_info'] = f'Search: {q} ({self.get_queryset().count()})'
+
+        return context
+
+class RentalCreate(UserPassesTestMixin, CreateView):
+    model = Rental
+    form_class = RentalForm
+    # 'book', 'librarian',
+    def test_func(self):
+        return self.request.user.is_superuser or self.request.user.is_staff
+
+    def form_valid(self, form):
+        current_user = self.request.user
+
+        super(RentalCreate, self).form_valid(form)
+
+        pk = self.kwargs['pk']
+
+        if current_user.is_staff or current_user.is_superuser:
+
+            customer = User.objects.filter(username=self.request.POST.get('customer_str')).first()
+
+            if customer:
+                self.object.book = Book.objects.get(pk=pk)
+
+                self.object.librarian = current_user
+                self.object.customer = customer
+                self.object.save()
+            else:
+                raise ValueError('없는 고객입니다.')
+
+        return redirect(f'/book/{pk}/')
+
+def delete_rental(request, pk):
+    rental = get_object_or_404(Rental, pk=pk)
+    book = rental.book
+    if request.user.is_staff or request.user.is_superuser:
+        rental.delete()
         return redirect(book.get_absolute_url())
     else:
         raise PermissionDenied

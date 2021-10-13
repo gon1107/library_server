@@ -10,6 +10,9 @@
     <div class="row">
         <div class="col-lg-9">
             <div id = "book-area">
+                {% if rental %}
+                <span class="badge badge-secondary float-right">대출중</span>
+                {% endif %}
                 <!-- Book category -->
                 {% if book.category %}
                 <span class="badge badge-secondary float-right">{{book.category}}</span>
@@ -39,31 +42,13 @@
                                     <div class="text-muted fst-italic mb-2">{{book.created_at}} by <a href="#">{{book.author}}</a></div>
                                     <div class="text-muted fst-italic mb-2">출판정보 : {{book.publisher}}, {{book.release_date}}</div>
                                     <div class="text-muted fst-italic mb-2">가격 : {{book.price}}</div>
-                                    <!-- 로그인하고 로그인한 사용자와 글 작성자 일치여부 확인 -->
-                                    <!-- 일치하면 버튼이 화면에 표시되고, 그렇지 않으면 보이지 않는다. -->
-                                    {% if user.is_authenticated and user == book.author %}
-                                    <a class="btn btn-info btn-sm float-right" href="/book/update_book/{{book.pk}}/" role="button">
-                                        <i class="fas fa-pen"></i> Edit Book
-                                    </a>
-                                    {% endif %}
+
                                 </header>
                             </div>
+
                             <!-- 요약문 출력 부분 -->
                             <!-- Book content-->
                             <section class="mb-5">{{book.get_content_markdown | safe}}</section>
-
-                            {% if book.tags.exists %}
-                            <i class="fas fa-tags"></i><!-- fontawesome을 활용해 tag 아이콘 사용 -->
-
-                            <!-- all 대신 iterator 사용 이유 -->
-                            <!-- 결과를 재사용하지 않고, 메모리 문제를 일으킬 만한 많은 양의 데이터를 사용할 경우는 all() 대신 iterator()를 사용해야 한다. -->
-                            {% for tag in book.tags.all %}
-                            <!-- 태그 하이퍼링크 생성. 클릭하면 태그 페이지로 이동한다 -->
-                            <a href="{{tag.get_absolute_url}}"><span class="'badge badge-pill badge-light">{{tag}}</span></a>
-                            {% endfor %}
-                            <br/><!-- 줄바꿈-->
-                            <br/>
-                            {% endif %}
 
                             {% if book.file_upload %}
                             <a href="{{book.file_upload.url}}" class="btn btn-outline-dark" role="button" download>Download:
@@ -83,7 +68,97 @@
                         </div>
                     </div>
                 </article>
+                {% if book.tags.exists %}
+                <i class="fas fa-tags"></i><!-- fontawesome을 활용해 tag 아이콘 사용 -->
+
+                <!-- all 대신 iterator 사용 이유 -->
+                <!-- 결과를 재사용하지 않고, 메모리 문제를 일으킬 만한 많은 양의 데이터를 사용할 경우는 all() 대신 iterator()를 사용해야 한다. -->
+
+                {% for tag in book.tags.all %}
+                <!-- 태그 하이퍼링크 생성. 클릭하면 태그 페이지로 이동한다 -->
+                <a href="{{tag.get_absolute_url}}"><span class="'badge badge-pill badge-light">{{tag}}</span></a>
+                {% endfor %}
+
+                {% endif %}
+                <!-- 로그인하고 로그인한 사용자와 글 작성자 일치여부 확인 -->
+                <!-- 일치하면 버튼이 화면에 표시되고, 그렇지 않으면 보이지 않는다. -->
+                {% if user.is_staff or user.is_superuser %}
+                {% if rental %}
+                <div class="float-right">
+                    <a roll="button"
+                       href="#"
+                       id="rental-{{rental.pk}}-delete-modal-btn"
+                       class="btn btn-info btn-sm float-right"
+                       data-toggle="modal" data-target="#deleteRentalModal-{{rental.pk}}">
+                        <i class="fas fa-pen"></i> 반납하기
+                    </a>
+                </div>
+
+                <!-- Modal -->
+                <div class="modal fade" id="deleteRentalModal-{{rental.pk}}" tabindex="-1" role="dialog" aria-labelledby="deleteRentalModalLabel" aria-hidden="true">
+                    <div class="modal-dialog" role="document">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title" id="rental-{{rental.pk}}-deleteModalLabel">반납하기</h5>
+                                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                    <span aria-hidden="true">&times;</span>
+                                </button>
+                            </div>
+                            <div class="modal-body">
+                                반납하시겠습니까
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                                <a roll="button" class="btn btn-danger" href="/book/delete_rental/{{rental.pk}}/">Complete</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% else %}
+                <div class="float-right">
+                    <a roll="button"
+                       href="#"
+                       id="rental-{{rental.pk}}-create-modal-btn"
+                       class="btn btn-info btn-sm float-right"
+                       data-toggle="modal" data-target="#createRentalModal-{{rental.pk}}">
+                        <i class="fas fa-pen"></i> 대출하기
+                    </a>
+                </div>
+
+                <!-- Modal -->
+                <div class="modal fade" id="createRentalModal-{{rental.pk}}" tabindex="-1" role="dialog" aria-labelledby="createRentalModalLabel" aria-hidden="true">
+                    <div class="modal-dialog" role="document">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title" id="rental-{{rental.pk}}-createModalLabel">대출하기</h5>
+                                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                    <span aria-hidden="true">&times;</span>
+                                </button>
+                            </div>
+                            <form method="post" id="rental-form" action="{{book.get_absolute_url}}create_rental/">{% csrf_token %}
+                                <div class="modal-body">
+                                    {{rental_form | crispy}}
+                                    <input type="text" placeholder="고객 이름" name="customer_str" id="id_customer_str" class="textinput textInput form-control">
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                                    <button type="submit" class="btn btn-primary float-right">Submit</button>
+                                    <!-- <a roll="button" class="btn btn-danger" href="/book/{{book.pk}}/create_rental/">Complete</a> -->
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+                {% endif %}
+                {% if user.is_authenticated and user == book.author %}
+                <a class="btn btn-info btn-sm float-right" href="/book/update_book/{{book.pk}}/" role="button">
+                    <i class="fas fa-pen"></i> Edit Book
+                </a>
+                {% endif %}
             </div>
+            </br>
+
             <div id ="review-area">
                 <!-- Reviews section-->
                 <section class="mb-5">
@@ -130,18 +205,23 @@
                             <!-- Single review-->
                             {% if book.review_set.exists %}
                             {% for review in book.review_set.iterator %}
-                            <div id="review-{{review.pk}}" data-score="{{review.score}}">
+                            <div id="review-{{review.pk}}">
                                 <div class="d-flex">
                                     <div class="flex-shrink-0">
-                                        <img class="rounded-circle" src="https://dummyimage.com/50x50/ced4da/6c757d.jpg" alt="..." />
+                                        <img class="rounded-circle" src="{{review.get_avatar_url}}" alt="{{review.author}}" width="60px"/>
                                     </div>
                                     <div class="mr-auto">
                                         <div class="fw-bold">{{review.author.username}}
                                             <small class="text-muted">{{review.created_at}}</small>
                                         </div>
-                                        <p class="text-muted text-right">
-                                            <small>Score:&nbsp;{{review.score}}</small>
-                                        </p>
+                                        <small>Score:&nbsp;{{review.score}}</small>
+                                        <div id="review_stars" data-score="{{review.score}}">
+                                            <button class="star" data-value="1"></button>
+                                            <button class="star" data-value="2"></button>
+                                            <button class="star" data-value="3"></button>
+                                            <button class="star" data-value="4"></button>
+                                            <button class="star" data-value="5"></button>
+                                        </div>
                                         <p>{{review.content | linebreaks}}</p>
                                     </div>
                                     {% if user.is_authenticated and review.author == user %}

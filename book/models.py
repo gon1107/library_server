@@ -1,3 +1,5 @@
+#from datetime import timedelta
+
 from django.contrib.auth.models import User
 from django.core.validators import MinValueValidator, MaxValueValidator
 from django.db import models
@@ -34,9 +36,9 @@ class Book(models.Model):
     book_author = models.CharField(max_length = 128)
     publisher = models.CharField(max_length = 255)
     price = models.IntegerField()
-    release_date = models.DateField()
-    created_at = models.DateField(auto_now_add=True)
-    updated_at = models.DateField(auto_now=True)
+    release_date = models.DateTimeField()
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
     content = MarkdownxField()
 
     head_image = models.ImageField(upload_to='book/images/%Y/%m/%d/', blank=True)
@@ -66,10 +68,30 @@ class Review(models.Model):
     content = models.TextField()
     score = models.IntegerField(validators=[MinValueValidator(1), MaxValueValidator(5)], default=1)
     created_at = models.DateTimeField(auto_now_add=True)
-    modified_at = models.DateField(auto_now=True)
+    modified_at = models.DateTimeField(auto_now=True)
 
     def __str__(self):
         return f'{self.author}::{self.score}::{self.content}'
 
     def get_absolute_url(self):
         return f'{self.book.get_absolute_url()}#review-{self.pk}'
+
+    def get_avatar_url(self):
+        if self.author.socialaccount_set.exists():
+            return self.author.socialaccount_set.first().get_avatar_url()
+        else:
+            return f'https://doitdjango.com/avatar/id/331/f34cd00c7f82e89e/svg/{self.author.email}'
+
+class Rental(models.Model):
+    book = models.ForeignKey(Book, blank=False, null=True, on_delete=models.SET_NULL)
+    librarian = models.ForeignKey(User, blank=False, null=True, on_delete=models.SET_NULL, related_name='librarian')
+    customer = models.ForeignKey(User, blank=False, null=True, on_delete=models.SET_NULL, related_name='customer')
+    created_at = models.DateTimeField(auto_now_add=True)
+    return_date = models.DateTimeField()
+    
+    def __str__(self):
+        return f'{self.pk}. {self.book.title}::{self.librarian}::{self.customer}'
+
+    def get_absolute_url(self):
+        return f'/book/rental/{self.pk}'
+

@@ -194,6 +194,7 @@ class TestView(TestCase):
         review_001_area = reviews_area.find('div', id='review-1')
         self.assertIn(self.review_001.author.username, review_001_area.text)
         self.assertIn(self.review_001.content, review_001_area.text)
+        self.assertIn('Score', review_001_area.text)
 
     def test_category_page(self):
         # 'programming' 카테고리를 가지는 포스트 글들을 출력하는 페이지로 접속한다.
@@ -406,7 +407,7 @@ class TestView(TestCase):
             self.book_001.get_absolute_url() + 'new_review/',
             {
                 'content': "오바마의 댓글입니다.",
-                'score': 4
+                'my_score': 4
             },
             follow=True,
         )
@@ -426,6 +427,7 @@ class TestView(TestCase):
         new_review_div = review_area.find('div', id=f'review-{new_review.pk}')
         self.assertIn('obama', new_review_div.text)
         self.assertIn('오바마의 댓글입니다.', new_review_div.text)
+        self.assertIn('4', new_review_div.text)
 
     def test_review_update(self):
         comment_by_trump = Review.objects.create(
@@ -467,11 +469,13 @@ class TestView(TestCase):
         content_textarea = update_review_form.find('textarea', id='id_content')
         self.assertIn(self.review_001.content, content_textarea.text)
 
+        self.assertIn('Score', update_review_form.text)
+
         response = self.client.post(
             f'/book/update_review/{self.review_001.pk}/',
             {
                 'content': "오바마의 댓글을 수정합니다.",
-                'score': 4,
+                'my_score': 4,
             },
             follow=True,
         )
@@ -536,3 +540,25 @@ class TestView(TestCase):
 
         self.assertEqual(Review.objects.count(), 1)
         self.assertEqual(self.book_001.review_set.count(), 1)
+
+    def test_search(self):
+        book_about_new_book = Book.objects.create(
+            title='신간에 대한 포스트입니다.',
+            content='category가 없을 수도 있죠',
+            publisher='Chosun',
+            price=20000,
+            release_date='2021-09-15',
+            author=self.user_trump
+        )
+
+        response = self.client.get('/book/search/신간/')
+        self.assertEqual(response.status_code, 200)
+        soup = BeautifulSoup(response.content, 'html.parser')
+
+        main_area = soup.find('div', id='main-area')
+
+        self.assertIn('Search: 신간 (2)', main_area.text)
+        self.assertNotIn(self.book_001.title, main_area.text)
+        self.assertNotIn(self.book_002.title, main_area.text)
+        self.assertIn(self.book_003.title, main_area.text)
+        self.assertIn(book_about_new_book.title, main_area.text)

@@ -20,7 +20,7 @@ window.onload = function() {
     }
 
     // 별점 버튼 애니메이션 처리
-    let stars = document.getElementsByClassName('star');
+    let stars = document.getElementById('id_stars').getElementsByClassName('star');
 
     for (let star of stars) {
         star.addEventListener('mouseover', function() {
@@ -46,5 +46,18 @@ window.onload = function() {
             event.preventDefault();
             document.getElementById('id_my_score').value = this.dataset.value;
         });
+    }
+
+    let reviews = document.querySelectorAll('#review_stars');
+
+    for (let review of reviews){
+        let score = review.dataset.score
+        console.log(score)
+        let stars = review.getElementsByClassName('star');
+        for (let star of stars){
+            for (var i = 0; i < score; i++) {
+                stars[i].classList.add('star-hover');
+            }
+        }
     }
 }
