@@ -1,4 +1,4 @@
-#from datetime import timedelta
+# from datetime import timedelta
 
 from django.contrib.auth.models import User
 from django.core.validators import MinValueValidator, MaxValueValidator
@@ -62,6 +62,12 @@ class Book(models.Model):
     def get_content_markdown(self):
         return markdown(self.content)
 
+    def get_avatar_url(self):
+        if self.author.socialaccount_set.exists():
+            return self.author.socialaccount_set.first().get_avatar_url()
+        else:
+            return f'https://doitdjango.com/avatar/id/331/f34cd00c7f82e89e/svg/{self.author.email}'
+
 class Review(models.Model):
     book = models.ForeignKey(Book, on_delete=models.CASCADE)
     author = models.ForeignKey(User, null=True, on_delete=models.SET_NULL)
@@ -88,10 +94,21 @@ class Rental(models.Model):
     customer = models.ForeignKey(User, blank=False, null=True, on_delete=models.SET_NULL, related_name='customer')
     created_at = models.DateTimeField(auto_now_add=True)
     return_date = models.DateTimeField()
-    
+    #default=created_at + timedelta(14)
+
     def __str__(self):
         return f'{self.pk}. {self.book.title}::{self.librarian}::{self.customer}'
 
     def get_absolute_url(self):
         return f'/book/rental/{self.pk}'
 
+class Reservation(models.Model):
+    book = models.ForeignKey(Book, blank=False, null=True, on_delete=models.SET_NULL)
+    customer = models.ForeignKey(User, blank=False, null=True, on_delete=models.SET_NULL)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f'{self.pk}. {self.book.title}::{self.customer}'
+
+    def get_absolute_url(self):
+        return f'{self.book.get_absolute_url()}#reservation-{self.pk}'

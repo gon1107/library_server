@@ -1,3 +1,6 @@
+from datetime import datetime, timedelta
+
+from bs4 import BeautifulSoup
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.contrib.auth.models import User
 from django.core.exceptions import PermissionDenied
@@ -5,9 +8,10 @@ from django.db.models import Q
 from django.shortcuts import render, redirect, get_object_or_404
 from django.utils.text import slugify
 from django.views.generic import ListView, DetailView, CreateView, UpdateView
+from django.core.mail import EmailMessage
 
-from book.forms import ReviewForm, RentalForm
-from book.models import Book, Category, Tag, Review, Rental
+from book.forms import ReviewForm, RentalForm, ReservationForm
+from book.models import Book, Category, Tag, Review, Rental, Reservation
 
 
 class BookList(ListView):
@@ -27,11 +31,14 @@ class BookDetail(DetailView):
 
     def get_context_data(self, *, object_list=None, **kwargs):
         context = super(BookDetail, self).get_context_data()
+        reservation = Book.objects.get(pk=self.kwargs['pk']).reservation_set.filter(customer=self.request.user)
         context['categories'] = Category.objects.all()
         context['no_category_book_count'] = Book.objects.filter(category=None).count()
         context['rental'] = Book.objects.get(pk=self.kwargs['pk']).rental_set.all().first()
+        context['reservation'] = reservation.first()
         context['review_form'] = ReviewForm
         context['rental_form'] = RentalForm
+        context['reservation_form'] = ReservationForm
         return context
 
 class BookCreate(LoginRequiredMixin, UserPassesTestMixin, CreateView):
@@ -90,9 +97,6 @@ class BookUpdate(LoginRequiredMixin, UpdateView):
     fields = ['title', 'hook_text', 'book_author', 'publisher', 'price', 'release_date', 'content', 'head_image', 'file_upload', 'category']
 
     template_name = 'book/book_update_form.html'
-
-    def test_func(self):
-        return self.request.user.is_superuser or self.request.user.is_staff
 
     def get_context_data(self, **kwargs):
         context = super(BookUpdate, self).get_context_data()
@@ -199,28 +203,11 @@ def tag_page(request, slug):
         'book/book_list.html',
         {
             'book_list': book_list,
-            'tag':tag,
+            'tag': tag,
             'categories': Category.objects.all(),
             'no_category_book_count': Book.objects.filter(category=None).count(),
         }
     )
-
-# def rental_page(request, pk):
-#     rental = Rental.objects.get(pk=pk)
-#
-#     book_list = Book.objects.all()
-#
-#
-#     return render(
-#         request,
-#         'book/book_list.html',
-#         {
-#             'book_list': book_list,
-#             'rental':rental,
-#             'categories': Category.objects.all(),
-#             'no_category_book_count': Book.objects.filter(category=None).count(),
-#         }
-#     )
 
 def new_review(request, pk):
     if request.user.is_authenticated:
@@ -232,7 +219,7 @@ def new_review(request, pk):
                 review = review_form.save(commit=False)
                 review.book = book
                 review.author = request.user
-                
+
                 # 우리가 만든 별점 버튼을 이용해서 받은 별점을 review의 score
                 # 필드에 저장
                 review.score = request.POST.get('my_score')
@@ -245,7 +232,6 @@ def new_review(request, pk):
 
 class ReviewUpdate(LoginRequiredMixin, UpdateView):
     model = Review
-    form_class = ReviewForm
 
     def dispatch(self, request, *args, **kwargs):
         if request.user.is_authenticated and request.user == self.get_object().author:
@@ -332,3 +318,175 @@ def delete_rental(request, pk):
         return redirect(book.get_absolute_url())
     else:
         raise PermissionDenied
+
+def new_reservation(request, pk):
+    if request.user.is_authenticated:
+        book = get_object_or_404(Book, pk=pk)
+        rental = book.rental_set.all().first()
+        today = datetime.today()
+
+        if request.method == 'POST':
+            reservation_form = ReservationForm(request.POST)
+            if reservation_form.is_valid():
+                reservation = reservation_form.save(commit=False)
+                reservation.book = book
+                reservation.customer = request.user
+
+                reservation.save()
+                reservation_book_count = book.reservation_set.all().count()
+
+                format = '%Y년-%m월-%d일'
+                text = '대출 예약이 완료되었습니다.\n'
+
+                if reservation_book_count > 1:
+                    text += '이전 대출예약자가 존재합니다.\n 대출예약 대기번호 ' + str(reservation_book_count) + '번입니다.\n'
+
+                if rental:
+                    text += '대출 가능 일자는' + datetime.strftime(rental.return_date + timedelta(1), format) + '입니다.'
+                else:
+                    text += '대출 가능 일자는' + datetime.strftime(today, format) + '입니다.'
+
+                email = EmailMessage(
+                    '대출예약완료',
+                    text,
+                    'kngon1107@gmail.com',
+                    ['kngon1107@gmail.com'],
+                )
+                email.send()
+                return render(
+                    request,
+                    'book/reservation.html',
+                    {
+                        # 'reservation': reservation,
+                        'rental': rental,
+                        'today': today,
+                        'reservation_book_count': reservation_book_count,
+                        'redirect': book.get_absolute_url()
+                    }
+                )
+            else:
+                return redirect(book.get_absolute_url())
+        else:
+            raise PermissionDenied
+
+def delete_reservation(request, pk):
+    reservation = get_object_or_404(Reservation, pk=pk)
+    book = reservation.book
+    if reservation.customer == request.user:
+        reservation.delete()
+        return redirect(book.get_absolute_url())
+    else:
+        raise PermissionDenied
+
+def change_rental(request, pk):
+    book = get_object_or_404(Book, pk=pk)
+    rental = book.rental_set.all().first()
+    reservations = book.reservation_set.all()
+
+    if request.user.is_staff or request.user.is_superuser:
+        rental.delete()
+    else:
+        raise PermissionDenied
+
+    if request.method == 'POST':
+        rental_form = RentalForm(request.POST)
+        if rental_form.is_valid():
+            rental = rental_form.save(commit=False)
+            rental.book = book
+            rental.librarian = request.user
+            rental.customer = User.objects.get(pk=request.POST.get('reservation_pk'))
+            rental.save()
+
+            for r in reservations:
+                if rental.customer == r.customer:
+                    rental_text = '대출이 완료되었습니다.'
+
+                    rental_email = EmailMessage(
+                        '대출완료',
+                        rental_text,
+                        'kngon1107@gmail.com',
+                        ['kngon1107@gmail.com'],
+                    )
+                    rental_email.send()
+                else:
+                    cancel_text = '대출 예약이 취소되었습니다.'
+
+                    cancel_email = EmailMessage(
+                        '대출예약취소',
+                        cancel_text,
+                        'kngon1107@gmail.com',
+                        [r.customer.email],
+                    )
+                    cancel_email.send()
+                r.delete()
+
+            return render(
+                request,
+                'book/reservation_list.html',
+                {
+                    # 'reservation': reservation,
+                    'rental': rental,
+                    'redirect': book.get_absolute_url()
+                }
+            )
+        else:
+            return redirect(book.get_absolute_url())
+    else:
+        raise PermissionDenied
+    return redirect(book.get_absolute_url())
+
+def reservation_list(request):
+    reservations = Reservation.objects.all()
+
+    return render(
+        request,
+        'book/reservation_list.html',
+        {
+            'reservations': reservations,
+            'rental_form': RentalForm,
+        }
+    )
+# class ReservationCreate(LoginRequiredMixin, CreateView):
+#     model = Reservation
+#     template_name = 'book/reservation.html'
+#
+#     def dispatch(self, request, *args, **kwargs):
+#         pk = self.kwargs['pk']
+#         if request.user.is_authenticated and request.user == self.get_object().author:
+#             return super(ReservationCreate, self).dispatch(request, *args, **kwargs)
+#         else:
+#             raise PermissionDenied
+#
+#     def form_valid(self, form):
+#         current_user = self.request.user
+#         pk = self.kwargs['pk']
+#         response = super(ReservationCreate, self).form_valid(form)
+#
+#         if current_user.is_authenticated:
+#             customer = current_user
+#
+#             if customer:
+#                 self.object.book = Book.objects.get(pk=pk)
+#                 self.object.customer = customer
+#                 self.object.save()
+#             else:
+#                 raise ValueError('error')
+#         else:
+#             return redirect(f'/book/{pk}/')
+#         return response
+
+# def rental_page(request, pk):
+#     rental = Rental.objects.get(pk=pk)
+#
+#     book_list = Book.objects.all()
+#
+#     return render(
+#         request,
+#         'book/book_list.html',
+#         {
+#             'book_list': book_list,
+#             'rental': rental,
+#             'categories': Category.objects.all(),
+#             'no_category_book_count': Book.objects.filter(category=None).count(),
+#         }
+#     )

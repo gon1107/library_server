@@ -10,14 +10,29 @@ function getUrlParams() {
     return params;
 }
 
-window.onload = function() {
-    console.log("hello")
+function searchBook(){
+    let searchValue = document.getElementById('search-input').value.trim();
+    if(searchValue.length > 1){
+        location.href="/book/search/" + searchValue + "/";
+    }
+    else{
+        alert('검색어('+ searchValue +')가 너무 짧습니다.');
+    }
+};
 
+window.onload = function() {
     if (getUrlParams().error) {
         let div = document.createElement("div")
         div.append("slug가 빈 값입니다.")
         console.log(div.textContent)
     }
+
+    document.getElementById('search-input').addEventListener('keyup', function(event){
+    console.log(event.key)
+    if(event.key === 'Enter'){
+        searchBook();
+        }
+    });
 
     // 별점 버튼 애니메이션 처리
     let stars = document.getElementById('id_stars').getElementsByClassName('star');

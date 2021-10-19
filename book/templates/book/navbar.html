@@ -16,34 +16,44 @@
         <div class="collapse navbar-collapse" id="navbarSupportedContent">
             <!-- 네비게이션의 좌측부분 (mr-auto 적용하여 좌측정렬)-->
             <ul class="navbar-nav mr-auto">
-                <!-- 첫 번째 메뉴-->
+                <!-- 첫 번째 메뉴 -->
                 <li class="nav-item">
                     <a class="nav-link" href="/">Home</a>
                 </li>
-                <!-- 두 번째 메뉴-->
+                <!-- 두 번째 메뉴 -->
                 <li class="nav-item">
                     <a class="nav-link" href="/info/">도서관안내</a>
                 </li>
-                <!-- 세 번째 메뉴-->
+                <!-- 세 번째 메뉴 -->
+                {% if user.is_staff or user.is_superuser %}
                 <li class="nav-item">
-                    <a class="nav-link" href="/search/">자료검색</a>
+                    <a class="nav-link" href="/book/reservation_list/">대출예약현황</a>
                 </li>
-                <!-- 네 번째 메뉴-->
-                <li class="nav-item">
-                    <a class="nav-link" href="#">소장자료</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="/book/">도서목록</a>
+                {% endif %}
+                <!-- 마지막 메뉴 -->
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownMenuLink"
+                       roll="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                        자료검색
+                    </a>
+                    <div class="dropdown-menu" aria-labelledby="navbarDropdownMenuLink">
+                        <a class="dropdown-item" href="/search/"><!-- /book/search/ 절대 경로 book/search/ 상대경로 -->
+                            소장자료
+                        </a>
+                        <a class="dropdown-item" href="/book/">
+                            도서목록
+                        </a>
+                    </div>
                 </li>
             </ul>
         </div>
-
-        <!-- 다섯 번째 메뉴 (드롭다운 메뉴)-->
-        <ul class="navbar-nav">
+        <!-- 네 번째 메뉴 (드롭다운 메뉴)-->
+        <ul class="navbar-nav ml-auto">
             {% if user.is_authenticated %}
             <li class="nav-item dropdown">
-                <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownMenuLink"
-                   roll="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                <!-- 드롭다운 메뉴를 펼쳤다 숨겼다 하는 버튼-->
+                <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownMenuLogLink"
+                   role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                     {% if user.socialaccount_set.all.0.get_avatar_url %}
                     <img class="rounded-circle" width="25px" src="{{user.socialaccount_set.all.0.get_avatar_url}}" alt="">
                     {% else %}
@@ -52,18 +62,17 @@
                     &nbsp;
                     {{user.username}}
                 </a>
-                <div class="dropdown-menu" aria-labelledby="navbarDropdownMenuLink">
-                    <a class="dropdown-item" href="/accounts/logout/">
-                        Log Out
-                    </a>
+                <!-- 드롭다운 메뉴 구성-->
+                <div class="dropdown-menu" aria-labelledby="navbarDropdownMenuLogLink">
+                    <a class="dropdown-item" href="/accounts/logout">Log Out</a>
                 </div>
             </li>
-            <!-- 로그인 버튼-->
+
             {% else %}
-            </li class="nav-item">
-            <a class="nav-link" href="#" data-toggle="modal" data-target="#loginModal">
-                Log In
-            </a>
+            <!-- 네비게이션의 우측 부분-->
+            <!-- 로그인 버튼-->
+            <li class="nav-item">
+                <a class="nav-link" href="#" data-toggle="modal" data-target="#loginModal">Log In</a>
             </li>
             {% endif %}
         </ul>
@@ -83,20 +92,17 @@
             <div dlass="modal-body">
                 <div class="row">
                     <div class="col-md-6">
-                        <a role="button" class="btn btn-outline-dark btn-block" href="{% provider_login_url 'google' %}">
+                        <a role="button" class="btn btn-outline-dark btn-block btn sm" href="{% provider_login_url 'google' %}">
                             <i class="fab fa-google google-icon"></i>
-                            &nbsp&nbsp Log in with Google
-                        </a>
-                        <a role="button" class="btn btn-outline-dark btn-block" href="/accounts/login/">
+                            &nbsp&nbsp Log in with Google</a>
+                        <a roll="button" class="btn btn-outline-dark btn-block btn sm" href="/accounts/login/">
                             <i class="fas fa-envelope"></i>
-                            &nbsp&nbsp Log in with E-mail
-                        </a>
+                            &nbsp&nbsp Log in with Username</a>
                     </div>
                     <div class="col-md-6">
-                        <a role="button" class="btn btn-outline-dark btn-block" href="/accounts/signup/">
+                        <a roll="button" class="btn btn-outline-dark btn-block btn sm" href="/accounts/signup/">
                             <i class="fas fa-envelope"></i>
-                            &nbsp&nbsp Sign up with E-mail
-                        </a>
+                            &nbsp&nbsp Sign up with E-mail</a>
                     </div>
                 </div>
             </div>

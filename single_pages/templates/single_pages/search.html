@@ -1,0 +1,24 @@
+{% extends 'book/base_full_width.html' %}
+{% block head_title %}Search - Library{% endblock %}
+
+{% block main_area %}
+<div class="container">
+    <div class="row">
+        <!-- Search widget-->
+        <div class="col">
+            <div class="card mb-4">
+                <!-- 검색 영역의 헤더부분-->
+                <div class="card-header">Search</div>
+                <!-- 검색 영역의 바디부분 (검색어와 검색버튼이 존재하는 영역)-->
+                <div class="card-body">
+                    <div class="input-group">
+                        <input id='search-input' class="form-control" type="text" placeholder="검색어 입력">
+                        <button onclick="searchBook();" class="btn btn-primary" id="button-search" type="button">Go!</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

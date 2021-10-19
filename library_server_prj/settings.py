@@ -150,3 +150,11 @@ SITE_ID = 1
 ACCOUNT_EMAIL_REQUIRED = True
 ACCOUNT_EMAIL_VERIFCATION = 'none'
 LOGIN_REDIRECT_URL = '/book/'
+
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = "smtp.gmail.com"
+EMAIL_HOST_USER = 'kngon1107@gmail.com'#(위 설정에 사용한 GMail 계정)
+EMAIL_HOST_PASSWORD = 'rlaskarhs!2'#(위 설정에 사용한 GMail 비밀번호)
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+DEFAULT_FROM_EMAIL = EMAIL_HOST_USER

@@ -3,8 +3,8 @@
 <html>
 <head>
     <title>{% block head_title %}도서목록{% endblock %}</title>
-    <link href="{% static 'blog/bootstrap/bootstrap.css' %}" rel="stylesheet" type="text/css">
-    <link href="{% static 'blog/css/my-style.css' %}" rel="stylesheet" type="text/css">
+    <link href="{% static 'book/bootstrap/bootstrap.css' %}" rel="stylesheet" type="text/css">
+    <link href="{% static 'book/css/my-style.css' %}" rel="stylesheet" type="text/css">
     <script src="https://kit.fontawesome.com/3c23c74fb5.js" crossorigin="anonymous"></script>
 
     <style type="text/css">
@@ -66,26 +66,10 @@
         </div>
     </div>
 </div>
-<script>
-    function searchBook(){
-        let searchValue = document.getElementById('search-input').value.trim();
-        if(searchValue.length > 1){
-            location.href="/book/search/" + searchValue + "/";
-        }
-        else{
-            alert('검색어('+ searchValue +')가 너무 짧습니다.');
-        }
-    };
 
-    document.getElementById('search-input').addEventListener('keyup', function(event){
-        console.log(event.key)
-        if(event.key === 'Enter'){
-            searchBook();
-        }
-    });
-</script>
-
-{% include 'book/footer.html' %}
+<div class="fixed-bottom">
+    {% include 'book/footer.html' %}
+</div>
 
 <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"
         integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj"
@@ -96,6 +80,6 @@
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/js/bootstrap.min.js"
         integrity="sha384-+YQ4JLhjyBLPDQt//I+STsc9iw4uQqACwlvpslubQzn4u2UU2UFM80nGisd026JF"
         crossorigin="anonymous"></script>
-<script src="{% static 'blog/js/my-script.js' %}"></script>
+<script src="{% static 'book/js/my-script.js' %}"></script>
 </body>
 </html>
