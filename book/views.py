@@ -31,11 +31,11 @@ class BookDetail(DetailView):
 
     def get_context_data(self, *, object_list=None, **kwargs):
         context = super(BookDetail, self).get_context_data()
-        reservation = Book.objects.get(pk=self.kwargs['pk']).reservation_set.filter(customer=self.request.user)
+        reservation = Book.objects.get(pk=self.kwargs['pk']).reservation_set.get(customer=self.request.user)
         context['categories'] = Category.objects.all()
         context['no_category_book_count'] = Book.objects.filter(category=None).count()
         context['rental'] = Book.objects.get(pk=self.kwargs['pk']).rental_set.all().first()
-        context['reservation'] = reservation.first()
+        context['reservation'] = reservation
         context['review_form'] = ReviewForm
         context['rental_form'] = RentalForm
         context['reservation_form'] = ReservationForm
@@ -383,7 +383,7 @@ def change_rental(request, pk):
     rental = book.rental_set.all().first()
     reservations = book.reservation_set.all()
 
-    if request.user.is_staff or request.user.is_superuser:
+    if rental and (request.user.is_staff or request.user.is_superuser):
         rental.delete()
     else:
         raise PermissionDenied
@@ -394,7 +394,8 @@ def change_rental(request, pk):
             rental = rental_form.save(commit=False)
             rental.book = book
             rental.librarian = request.user
-            rental.customer = User.objects.get(pk=request.POST.get('reservation_pk'))
+            print("*****************" + request.POST.get('reservation_pk'))
+            rental.customer = User.objects.get(pk=int(request.POST.get('reservation_pk')))
             rental.save()
 
             for r in reservations:
