@@ -23,19 +23,21 @@ class BookList(ListView):
         context = super(BookList, self).get_context_data()
         context['categories'] = Category.objects.all()
         context['no_category_book_count'] = Book.objects.filter(category=None).count()
-        # context['rental'] = Book.objects.get(pk=self.request.POST.get()).rental_set.all()
+
         return context
 
 class BookDetail(DetailView):
     model = Book
 
     def get_context_data(self, *, object_list=None, **kwargs):
+        book = Book.objects.get(pk=self.kwargs['pk'])
+
         context = super(BookDetail, self).get_context_data()
-        reservation = Book.objects.get(pk=self.kwargs['pk']).reservation_set.get(customer=self.request.user)
         context['categories'] = Category.objects.all()
         context['no_category_book_count'] = Book.objects.filter(category=None).count()
-        context['rental'] = Book.objects.get(pk=self.kwargs['pk']).rental_set.all().first()
-        context['reservation'] = reservation
+        context['rental'] = book.rental_set.all().first()
+        if self.request.user == None:
+            context['reservation'] = book.reservation_set.get(customer=self.request.user)
         context['review_form'] = ReviewForm
         context['rental_form'] = RentalForm
         context['reservation_form'] = ReservationForm
@@ -385,8 +387,6 @@ def change_rental(request, pk):
 
     if rental and (request.user.is_staff or request.user.is_superuser):
         rental.delete()
-    else:
-        raise PermissionDenied
 
     if request.method == 'POST':
         rental_form = RentalForm(request.POST)
@@ -394,8 +394,7 @@ def change_rental(request, pk):
             rental = rental_form.save(commit=False)
             rental.book = book
             rental.librarian = request.user
-            print("*****************" + request.POST.get('reservation_pk'))
-            rental.customer = User.objects.get(pk=int(request.POST.get('reservation_pk')))
+            rental.customer = reservations.get(pk=int(request.POST.get('reservation_pk'))).customer
             rental.save()
 
             for r in reservations:
@@ -405,8 +404,8 @@ def change_rental(request, pk):
                     rental_email = EmailMessage(
                         '대출완료',
                         rental_text,
-                        'kngon1107@gmail.com',
-                        ['kngon1107@gmail.com'],
+                        'kngon1107@gmail.com',# from
+                        [r.customer.email],# to
                     )
                     rental_email.send()
                 else:

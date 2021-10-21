@@ -100,7 +100,7 @@ class Rental(models.Model):
         return f'{self.pk}. {self.book.title}::{self.librarian}::{self.customer}'
 
     def get_absolute_url(self):
-        return f'/book/rental/{self.pk}'
+        return f'{self.book.get_absolute_url()}#rental-{self.pk}'
 
 class Reservation(models.Model):
     book = models.ForeignKey(Book, blank=False, null=True, on_delete=models.SET_NULL)
