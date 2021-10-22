@@ -1,9 +1,8 @@
 window.onload = function() {
     let navbar_menus = document.getElementById('navbarSupportedContent').getElementsByClassName('nav-item');
     let href = document.location.href;
-    console.log(href)
-    console.log('5125135252')
-    let base_url = 'http://127.0.0.1:8000'
+
+    let base_url = href.split('/')[0]+ '//' + href.split('/')[2]
     for (let menu of navbar_menus){
         if(href == base_url + '/')
             navbar_menus[0].classList.add('active');
