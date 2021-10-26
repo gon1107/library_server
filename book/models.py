@@ -75,6 +75,7 @@ class Review(models.Model):
     score = models.IntegerField(validators=[MinValueValidator(1), MaxValueValidator(5)], default=1)
     created_at = models.DateTimeField(auto_now_add=True)
     modified_at = models.DateTimeField(auto_now=True)
+    parent_id = models.ForeignKey("self", on_delete=models.CASCADE, null=True, default=None) # 자기참조
 
     def __str__(self):
         return f'{self.author}::{self.score}::{self.content}'
@@ -87,6 +88,10 @@ class Review(models.Model):
             return self.author.socialaccount_set.first().get_avatar_url()
         else:
             return f'https://doitdjango.com/avatar/id/331/f34cd00c7f82e89e/svg/{self.author.email}'
+
+    def get_child_reviews(self):
+        reviews = Review.objects.filter(parent_id=self.pk)
+        return reviews
 
 class Rental(models.Model):
     book = models.ForeignKey(Book, blank=False, null=True, on_delete=models.SET_NULL)
@@ -112,3 +117,5 @@ class Reservation(models.Model):
 
     def get_absolute_url(self):
         return f'{self.book.get_absolute_url()}#reservation-{self.pk}'
+
+

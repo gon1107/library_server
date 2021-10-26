@@ -224,7 +224,13 @@ def new_review(request, pk):
 
                 # 우리가 만든 별점 버튼을 이용해서 받은 별점을 review의 score
                 # 필드에 저장
-                review.score = request.POST.get('my_score')
+                parent_id_str = request.POST.get('parent_id')
+                if parent_id_str:
+                    parent_id = int(parent_id_str)
+                    r = Review.objects.get(pk=parent_id)
+                    review.parent_id = r
+                else:
+                    review.score = request.POST.get('my_score')
                 review.save()
                 return redirect(review.get_absolute_url())
             else:
