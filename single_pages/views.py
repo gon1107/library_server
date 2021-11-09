@@ -14,9 +14,13 @@ def index(request):
     )
 
 def info(request):
+    recent_books = Book.objects.order_by('-pk')[:3]
     return render(
         request,
-        'single_pages/info.html'
+        'single_pages/info.html',
+        {
+            'recent_books': recent_books,
+        }
     )
 
 def search(request):
