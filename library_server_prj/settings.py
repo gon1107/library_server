@@ -50,6 +50,7 @@ INSTALLED_APPS = [
     'allauth.socialaccount.providers.google',
     'book',
     'single_pages',
+    'api',
 ]
 
 MIDDLEWARE = [
