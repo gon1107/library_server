@@ -17,7 +17,7 @@ from book.models import Book, Category, Tag, Review, Rental, Reservation
 class BookList(ListView):
     model = Book
     order = '-pk'
-    paginate_by = 3
+    paginate_by = 5
 
     def get_context_data(self, *, object_list=None, **kwargs):
         context = super(BookList, self).get_context_data()
@@ -156,6 +156,14 @@ class BookUpdate(LoginRequiredMixin, UpdateView):
 
         return response
 
+# def delete_book(request, pk):
+#     book = get_object_or_404(Book, pk=pk)
+#
+#     if request.user.is_authenticated and request.user == book.author:
+#         book.delete()
+#         return redirect('/book/')
+#     else:
+#         raise PermissionDenied
 
 def category_page(request, slug):
     if slug == 'no_category':
