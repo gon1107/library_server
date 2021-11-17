@@ -1,3 +1,10 @@
 .margin-for-footer {
     margin-bottom: 130px;
 }
+
+.function_list{
+    font-weight: bold;
+    font-size: 1.0em;
+    line-height: 1.0em;
+    font-family: 돋움체;
+}

@@ -1,6 +1,7 @@
 @media screen {
     body {
-        background: url('/static/single_pages/images/home_books.png') no-repeat center center fixed;
+        //background: url('/static/single_pages/images/home_books.png') no-repeat center center fixed;
+        background-color: #266c00;
         -webkit-background-size: cover;
         -moz-background-size: cover;
         background-size: cover;
@@ -24,11 +25,4 @@ section {
 
 a {
     color: inherit;
-}
-
-.function_list{
-    font-weight: bold;
-    font-size: 1.0em;
-    line-height: 1.0em;
-    font-family: 돋움체;
 }
