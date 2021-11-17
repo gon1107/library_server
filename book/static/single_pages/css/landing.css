@@ -15,9 +15,20 @@
 }
 
 section {
-    margin-bottom: 150px;
+    margin-top: 400px;
 }
 
 .card {
-    background-color: rgba(0, 100, 50, 1);
+    background-color: rgba(0, 130, 50, 1);
+}
+
+a {
+    color: inherit;
+}
+
+.function_list{
+    font-weight: bold;
+    font-size: 1.0em;
+    line-height: 1.0em;
+    font-family: 돋움체;
 }

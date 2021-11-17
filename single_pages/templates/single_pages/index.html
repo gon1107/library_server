@@ -14,15 +14,15 @@
 
 {% include 'book/navbar.html' %}
 
-<header>
+<header class="bg-success">
     <div class="container">
         <div class="row justify-content-between">
-            <div class="col-lg-6 text-light text-dark" href="#library" type="button">
-                <h1 class="mt-5">Do It Django Library</h1>
-                <p>파이썬 웹프레임워크 django를 이용하여 만든 도서관 사이트</p>
+            <div class="col-lg-6" >
+                <h1 class="mt-5"><a style="text-decoration-line:none" href="#library">Do It Django Library</a></h1>
+                <p class="function_list">파이썬 웹프레임워크 django를 이용하여 만든 도서관 사이트</p>
             </div>
             <div class="col-lg-5 mt-5">
-                <h2 class="text-light text-dark" href="#recent_books" type ="button">Library - Recent books</h2>
+                <h2><a style="text-decoration-line:none" href="#recent_books">Library - Recent books</a></h2>
                 {% for book in recent_books %}
                 <div class="card mt-1">
                     <div class="card-body">
@@ -44,10 +44,60 @@
     </div>
 </header>
 
-<section id="recent_books">
+<section class="bg-primary" id="library">
+    </br>
+    </br>
+    </br>
+    </br>
+    </br>
+    <h2 class="text-center text-warning">Do It Django Library</h2>
+    </br>
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-4">
+            </div>
+            <div class="col-lg-4">
+                <div class="function_list">
+                    <p class="text-success text-center" style="font-size: 1.5em;">구현된 기능 목록</p>
+                    </br
+                    <ul>
+                        <li>관리자</li>
+                        <ul>
+                            <li>책 등록, 수정</li>
+                            <li>대출</li>
+                        </ul>
+                        </br>
+                        <li>로그인</li>
+                        <ul>
+                            <li>구글 로그인</li>
+                            도메인을 구입하지 않아 현재 비활성
+                            <li>로그인</li>
+                            <li>회원 가입</li>
+                            <li>리뷰</li>
+                            <li>리뷰 - 별점 부여</li>
+                            <li>대출예약</li>
+                            <li>대출예약 시 이메일 자동 송신</li>
+                        </ul>
+                        </br>
+                        <li>검색</li>
+                        <ul>
+                            <li>태그 클릭</li>
+                            <li>카테고리 클릭</li>
+                            <li>검색(태그 이름, 책 이름)</li>
+                        </ul>
+                    </ul>
+                </div>
+            </div>
+            <div class="col-lg-4">
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="bg-success" id="recent_books">
     <div class="container">
         <!-- Portfolio Section Heading-->
-        <h2 class="page-section-heading text-center text-uppercase text-secondary mb-0">Library - Recent books</h2>
+        <h2 class="text-center text-warning">Library - Recent books</h2>
 
         <div class="row">
             {% for book in recent_books %}
@@ -102,7 +152,7 @@
 
 
 
-    {% include 'book/footer.html' %}
+{% include 'book/footer.html' %}
 
 
 <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js" integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj" crossorigin="anonymous"></script>

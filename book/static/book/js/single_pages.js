@@ -30,7 +30,7 @@ window.addEventListener('DOMContentLoaded', event => {
             navbar_menus[1].classList.add('active');
         else if(href == base_url + '/book/reservation_list/')
             navbar_menus[2].classList.add('active');
-        else
+        else if(href == base_url + '/book/' || href == base_url + '/search/' || href.includes(base_url + '/book/search/'))//href.indexOf(base_url + '/book/search/') != -1
             navbar_menus[navbar_menus.length-1].classList.add('active');
     }
 });
