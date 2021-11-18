@@ -102,10 +102,10 @@ class Rental(models.Model):
     #default=created_at + timedelta(14)
 
     def __str__(self):
-        return "1"#f'{self.pk}. {self.book.title}::{self.librarian}::{self.customer}'
+        return f'{self.pk}. {self.book.title}::{self.librarian}::{self.customer}'
 
     def get_absolute_url(self):
-        return "1"#f'{self.book.get_absolute_url()}#rental-{self.pk}'
+        return f'{self.book.get_absolute_url()}#rental-{self.pk}'
 
 class Reservation(models.Model):
     book = models.ForeignKey(Book, blank=False, null=True, on_delete=models.SET_NULL)
