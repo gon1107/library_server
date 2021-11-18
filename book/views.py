@@ -159,7 +159,7 @@ class BookUpdate(LoginRequiredMixin, UpdateView):
 # def delete_book(request, pk):
 #     book = get_object_or_404(Book, pk=pk)
 #
-#     if request.user.is_authenticated and request.user == book.author:
+#     if request.user.is_staff:
 #         book.delete()
 #         return redirect('/book/')
 #     else:
@@ -396,7 +396,7 @@ def delete_reservation(request, pk):
 
 def change_rental(request, pk):
     book = get_object_or_404(Book, pk=pk)
-    rental = book.rental_set.all().first()
+    rental = book.rental_set.first()
     reservations = book.reservation_set.all()
 
     if rental and (request.user.is_staff or request.user.is_superuser):
@@ -433,21 +433,11 @@ def change_rental(request, pk):
                     )
                     cancel_email.send()
                 r.delete()
-
-            return render(
-                request,
-                'book/reservation_list.html',
-                {
-                    # 'reservation': reservation,
-                    'rental': rental,
-                    'redirect': book.get_absolute_url()
-                }
-            )
         else:
-            return redirect(book.get_absolute_url())
+            return redirect("/book/reservation_list/")
     else:
         raise PermissionDenied
-    return redirect(book.get_absolute_url())
+    return redirect("/book/reservation_list/")
 
 def reservation_list(request):
     reservations = Reservation.objects.all()
@@ -460,34 +450,6 @@ def reservation_list(request):
             'rental_form': RentalForm,
         }
     )
-# class ReservationCreate(LoginRequiredMixin, CreateView):
-#     model = Reservation
-#     template_name = 'book/reservation.html'
-#
-#     def dispatch(self, request, *args, **kwargs):
-#         pk = self.kwargs['pk']
-#         if request.user.is_authenticated and request.user == self.get_object().author:
-#             return super(ReservationCreate, self).dispatch(request, *args, **kwargs)
-#         else:
-#             raise PermissionDenied
-#
-#     def form_valid(self, form):
-#         current_user = self.request.user
-#         pk = self.kwargs['pk']
-#         response = super(ReservationCreate, self).form_valid(form)
-#
-#         if current_user.is_authenticated:
-#             customer = current_user
-#
-#             if customer:
-#                 self.object.book = Book.objects.get(pk=pk)
-#                 self.object.customer = customer
-#                 self.object.save()
-#             else:
-#                 raise ValueError('error')
-#         else:
-#             return redirect(f'/book/{pk}/')
-#         return response
 
 # def rental_page(request, pk):
 #     rental = Rental.objects.get(pk=pk)

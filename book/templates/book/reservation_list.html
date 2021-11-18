@@ -18,8 +18,8 @@
 <section>
     <div class="container">
         <div class="row justify-content-between">
-            <div class="col-lg mt-5">
-                <h1 class="mt-5">대출예약현황</h1>
+            <div class="col-lg">
+                <h1>대출예약현황</h1>
                 <h2 class="text-light text-dark">Library - reservation books</h2>
                 {% for reservation in reservations %}
                 <div class="card mt-1">
@@ -43,20 +43,20 @@
                         <div class="float-right">
                             <a role="button"
                                href="#"
-                               id="rental-{{rental.pk}}-create-modal-btn"
+                               id="rental-{{reservation.book.rental_set.first.pk}}-create-modal-btn"
                                class="btn btn-info btn-sm float-right"
-                               data-toggle="modal" data-target="#createRentalModal-{{rental.pk}}">
+                               data-toggle="modal" data-target="#createRentalModal-{{reservation.book.rental_set.first.pk}}">
                                 <i class="fas fa-pen"></i> 대출하기
                             </a>
                         </div>
                         <div class="text-muted fst-italic mb-2">대출 예약 날짜: {{reservation.created_at | date:'Y년 m월 d일'}}</div>
 
                         <!-- Modal -->
-                        <div class="modal fade" id="createRentalModal-{{rental.pk}}" tabindex="-1" role="dialog" aria-labelledby="createRentalModalLabel" aria-hidden="true">
+                        <div class="modal fade" id="createRentalModal-{{reservation.book.rental_set.first.pk}}" tabindex="-1" role="dialog" aria-labelledby="createRentalModalLabel" aria-hidden="true">
                             <div class="modal-dialog" role="document">
                                 <div class="modal-content">
                                     <div class="modal-header">
-                                        <h5 class="modal-title" id="rental-{{rental.pk}}-createModalLabel">대출하기</h5>
+                                        <h5 class="modal-title" id="rental-{{reservation.book.rental_set.first.pk}}-createModalLabel">대출하기</h5>
                                         <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                                             <span aria-hidden="true">&times;</span>
                                         </button>
@@ -83,9 +83,7 @@
     </div>
 </section>
 
-<div class="fixed-bottom">
-    {% include 'book/footer.html' %}
-</div>
+{% include 'book/footer.html' %}
 
 <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js" integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj" crossorigin="anonymous"></script>
 <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js" integrity="sha384-9/reFTGAW83EW2RDu2S0VKaIzap3H66lZH81PoYlFhbGU+6BZp6G7niu735Sk7lN" crossorigin="anonymous"></script>
