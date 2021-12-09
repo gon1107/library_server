@@ -19,9 +19,17 @@ window.addEventListener('DOMContentLoaded', event => {
     // fixed-top when page is scrolled
     document.addEventListener('scroll', fixedTop);
 
-    let navbar_menus = document.getElementById('navbarSupportedContent').getElementsByClassName('nav-item');
+    let navbar_menus = document.querySelectorAll('#navbarSupportedContent .nav-item');
+    console.log(navbar_menus);
+
+    let navbar_menu_links = navbar_menus.querySelectorAll('a');
+    console.log(navbar_menus_links);
+
+    //let navbar_menus = document.getElementById('navbarSupportedContent').getElementsByClassName('nav-item').getElementById('a');
+
     let href = document.location.href;
 
+    /*
     let base_url = href.split('/')[0]+ '//' + href.split('/')[2]
     for (let menu of navbar_menus){
         if(href == base_url + '/')
@@ -33,4 +41,5 @@ window.addEventListener('DOMContentLoaded', event => {
         else if(href == base_url + '/book/' || href == base_url + '/search/' || href.includes(base_url + '/book/search/'))//href.indexOf(base_url + '/book/search/') != -1
             navbar_menus[navbar_menus.length-1].classList.add('active');
     }
+    */
 });
